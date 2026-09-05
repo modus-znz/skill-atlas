@@ -12,6 +12,8 @@
 Python 3 stdlib only, plus the `node` already on this machine for the router stage.
 """
 import json, os, subprocess, sys
+import collections
+import re
 
 from atlas import config, dataset, diffs, render as render_mod, scan as scan_mod
 from atlas.taxonomy import Taxonomy
@@ -121,6 +123,23 @@ def cmd_doctor(argv):
         print("  identity sidecar: MISSING - diffs fall back to the lossy key; "
               "re-run `atlas.py build`")
         problems += 1
+
+    # The ledger ribbon in health.html summarises the findings below it. It is
+    # authored prose, so nothing forces it to agree with the `st-` classes it
+    # describes -- and a summary that drifts from its own list is exactly the
+    # defect the status pills were added to fix, one layer up. Counted, not trusted.
+    _hp = os.path.join(config.CONTENT_DIR, "health.html")
+    if os.path.exists(_hp):
+        _h = open(_hp, encoding="utf-8").read()
+        _tag = collections.Counter(re.findall(r'<div class="find sev-\w+ st-(\w+)"', _h))
+        _rib = re.search(r'<p class="ledger">.*?</p>', _h, re.S)
+        _said = {("decl" if "decision" in lbl else lbl): int(n)
+                 for n, lbl in re.findall(r'>(\d+) ([a-z ]+)<', _rib.group(0))} if _rib else {}
+        _real = {k: v for k, v in _tag.items()}
+        _ok = _rib is not None and _said == _real
+        print(f"  ledger ribbon: says {_said or 'NOTHING'} vs tagged {_real} - "
+              f"{'agrees' if _ok else 'DESYNCED - update the ribbon in content/health.html'}")
+        problems += 0 if _ok else 1
 
     print("\nNOTICES (informational; do not fail the build)")
     if os.path.exists(config.REPORT_JSON):

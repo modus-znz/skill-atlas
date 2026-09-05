@@ -5,70 +5,76 @@ asserted_on: 2026-09-05
 assert: {phantom_shadows: 0, stale_taxonomy: 0, unclassified: 0, desc_bloated_billed: 0, desc_missing: 0}
 ---
 <div class="sec-head"><h2>Health &amp; findings</h2><p>Ranked by what it costs to leave alone.</p></div>
+  <p class="ledger"><b>Ledger:</b>
+    <span class="pill p-bad">1 open</span> needs work &middot;
+    <span class="pill p-info">3 open by decision</span> measured, declined, deliberate &middot;
+    <span class="pill p-ok">6 closed</span> struck through below.
+    Severity says how bad a finding <i>was</i>; status says whether it is still work &mdash; the two are independent, and rendering only the first is why a fixed Critical still read as an open red item.</p>
+
   <div class="stack">
 
-    <div class="find sev-hi">
-      <div class="fh"><h3>The Android release keystore and its password are committed and pushed</h3><span class="pill p-bad">Security</span><span class="pill p-bad">Action required</span></div>
+    <div class="find sev-hi st-open">
+      <div class="fh"><h3>The Android release keystore and its password are committed and pushed</h3><span class="pill p-bad">Open &middot; action required</span><span class="pill p-bad">Security</span></div>
       <p>Found while writing <code>capacitor-mobile-build</code> — not something the skill census would ever have surfaced, because it is not a skill problem. <code>android/app/build.gradle</code> declares the release <code>signingConfig</code> with the <b>store and key passwords in plaintext</b>, and that file plus <b>both copies of <code>modus-release.jks</code></b> are tracked and pushed to <code>git@github.com:dealtfel/Modus-FM-App.git</code>. The root <code>.gitignore</code> does carry <code>android/app/*.jks</code>, but the rule is inert: <b>gitignore never applies to an already-tracked file.</b> Anyone with read access to that repo can sign a build Android will accept as genuine.</p>
       <div class="fix"><b>Fix — and deleting the files is not enough.</b> They remain in history, so the key must be treated as compromised: generate a new keystore and re-key, then either purge history or rotate the upload key through Play App Signing. Going forward, read the credentials from an untracked <code>android/keystore.properties</code> at build time rather than declaring them in <code>build.gradle</code>. The correct shape is documented in <code>capacitor-mobile-build</code>; the password itself was deliberately never copied into any skill, note, or into this report.</div>
     </div>
 
-    <div class="find sev-hi">
-      <div class="fh"><h3>claude-router is the most expensive skill on the machine — and the one you are told to always load</h3><span class="pill p-bad">Critical</span><span class="pill gC">Grade C · 65</span></div>
+    <div class="find sev-hi st-closed">
+      <div class="fh"><h3>claude-router is the most expensive skill on the machine — and the one you are told to always load</h3><span class="pill p-ok">Closed 2026-09-04</span><span class="pill p-mute">Critical</span><span class="pill gC">Grade C · 65</span></div>
       <p>Its <code>SKILL.md</code> body is <b>50,372 characters ≈ 14,224 tokens</b>. CLAUDE.md instructs invoking it “at the start of any non-trivial task” and “always before concluding a capability does not exist”. Loading it twice in a session is roughly a fifth of the window before auto-compaction. It scores C on its own rubric purely on body weight — everything else about it is excellent.</p>
       <p><span class="pill p-ok">Fixed 2026-09-04</span> Split into a core plus five <code>references/</code> files: <b>53,448 &rarr; 27,050 bytes</b> (~15.1k &rarr; <b>~7.6k tokens</b>), with 33,039 bytes moved out — <code>execution-tiers.md</code>, <code>domain-notes.md</code>, <code>plugins-and-mcp.md</code>, <code>skill-vault.md</code>, <code>services-and-runbooks.md</code>. <b>The ~6 KB target below was wrong and was not met, deliberately.</b> Two things are what make this file worth loading at all: the hidden-skill name index (4.5 KB — the only place those 105 names are enumerated anywhere) and the decision order (11 KB). Cutting either to hit a byte target would have produced a cheap file that no longer answers the question it exists for. Conservation was checked mechanically — every backticked identifier in the old file, set-differenced against core plus references — and lost four incidental prose tokens and zero capability names.</p>
       <div class="fix"><b>Fix:</b> split it. A ~6 KB router — decision order, the hidden-family name map, the tier table — stays the always-load entry point; the measured cost derivations, runbook index, MCP gating table and OSS service inventory move to <code>references/</code> files the router points at by name. That is the pattern the router itself recommends to other skills.</div>
     </div>
 
-    <div class="find sev-hi">
-      <div class="fh"><h3>design-taste-frontend: 87,126 characters in a single file</h3><span class="pill p-bad">Critical</span></div>
+    <div class="find sev-hi st-closed">
+      <div class="fh"><h3>design-taste-frontend: 87,126 characters in a single file</h3><span class="pill p-ok">Closed 2026-09-04</span><span class="pill p-mute">Critical</span></div>
       <p><b>≈ 24,202 tokens</b> to load, with no <code>references/</code> split — the largest single skill in the library by a wide margin, and it is a frontend skill likely to be pulled in exactly when the context is already carrying application code. A <code>design-taste-frontend-v1</code> sits beside it, so two generations are both installed.</p>
       <p><span class="pill p-ok">Fixed 2026-09-04</span> <b>87,253 &rarr; 19,845 bytes</b> (~24.6k &rarr; <b>~5.6k tokens</b>) across eight <code>references/</code> files totalling 70,767 bytes. The core keeps the procedure — brief inference, the three dials, the design-system map, architecture, guardrails, dark mode — and the directives (25 KB), AI-tells, pattern vocabulary, redesign protocol, block library, pre-flight check and appendices move out. The conservation check lost <b>zero</b> identifiers and zero headings. <code>design-taste-frontend-v1</code> was left installed on purpose: nothing functional references it, and a listed skill costs only its description — retiring it is a judgement call for its owner, not a token argument.</p>
       <div class="fix"><b>Fix:</b> break into progressive-disclosure references, and retire <code>-v1</code> once the successor is trusted.</div>
     </div>
 
-    <div class="find sev-md">
-      <div class="fh"><h3><s style="opacity:.5">Four</s> Ten skills have descriptions too short for the search that has to find them</h3><span class="pill p-warn">Discoverability</span></div>
+    <div class="find sev-md st-closed">
+      <div class="fh"><h3><s style="opacity:.5">Four</s> Ten skills have descriptions too short for the search that has to find them</h3><span class="pill p-ok">Closed 2026-09-04</span><span class="pill p-warn">Discoverability</span></div>
       <p><code>odoo-api</code> (58 chars), <code>odoo-log</code> (49), <code>odoo-scaffold</code> (59) and the remotion family (43–47) are all hidden, meaning <code>skill_search</code> is their primary route — and <code>skill_search</code> ranks on the description string. A 49-character description gives the ranker almost nothing to match against, so these lose to longer, vaguer vault entries on queries they should win outright.</p>
       <p><span class="pill p-ok">Fixed 2026-09-04</span> <b>It was ten skills, not four.</b> All seven <code>odoo-*</code> were under the floor (49–93 chars), not the three this row named, plus the three <code>remotion-*</code>. Every one rewritten to <b>275–300 characters</b> carrying real trigger vocabulary — model names, log paths, error strings, API symbols — and re-validated at 10 skills, 0 errors, 0 warnings. <b>One correction to the fix text below:</b> the cost is not quite zero. <code>odoo-*</code> is re-listed by <code>/opt/odoo19-custom-addons/.claude/settings.json</code>, so inside that one repo the longer descriptions add roughly 500 tokens to the session prefix — a good trade for being findable, but a trade.</p>
       <div class="fix"><b>Fix:</b> extend each to 150–300 characters with the concrete trigger vocabulary — model names, file types, error strings — a real query would contain. Cost is zero: they are hidden, so descriptions are never billed to the session prefix.</div>
     </div>
 
-    <div class="find sev-md">
-      <div class="fh"><h3>58 colliding names cost 77 reachable skills</h3><span class="pill p-bad">Reachability</span></div>
+    <div class="find sev-md st-closed">
+      <div class="fh"><h3>58 colliding names cost 77 reachable skills</h3><span class="pill p-ok">Closed 2026-09-04</span><span class="pill p-mute">Reachability</span></div>
       <p><code>dcf-model</code> resolves four ways; <code>brainstorming</code>, <code>competitive-analysis</code>, <code>client-report</code>, <code>compliance-tracking</code> and 53 other names collide at least twice — 55 names over 132 copies. The router reported <b>102</b> shadow events, but <b>25 of those were phantom</b>: <code>skill-vault/agent-skills/.opencode/skills</code> is a symlink to its own <code>skills/</code>, and the walker's cycle guard only deduped entries reached <i>via</i> a symlink — <code>.opencode</code> is a real directory, so all 25 of that collection were walked twice and each shadowed itself. That is also why the router self-reported 718 vault files against 693 real ones.</p>
       <p><span class="pill p-ok">Fixed 2026-09-04</span> Both halves are resolved. <code>findSkillFiles</code> now dedupes the realpath of <i>every</i> directory it enters — one extra <code>realpath()</code> on a directory it was about to <code>readdir</code> anyway — which drops the phantom 25 at the source: <b>102 &rarr; 77</b> shadow reports, 718 &rarr; 693 vault files. The symlink itself was deliberately left in place: <code>git ls-files</code> shows it is tracked in the upstream <code>agent-skills</code> repo and serves the opencode client, so deleting it would dirty the repo and return on the next <code>pull</code>. And the 77 real clashes no longer cost anything — every copy is addressable by its <code>collection/name</code> id, and the bare name reports the others as <code>variants</code> instead of silently picking one.</p>
       <div class="fix"><b>Fix:</b> two independent changes — namespace the index as <code>collection/name</code>, and either skip symlinked directories in <code>findSkillFiles</code> or dedupe on <code>realpath</code>. The second is a two-line fix and removes 25 false shadow reports on its own.</div>
     </div>
 
-    <div class="find sev-md">
-      <div class="fh"><h3>Seven-deep hash-named duplicates in the official plugin cache</h3><span class="pill p-warn">Hygiene</span></div>
+    <div class="find sev-md st-closed">
+      <div class="fh"><h3>Seven-deep hash-named duplicates in the official plugin cache</h3><span class="pill p-ok">Closed 2026-09-04</span><span class="pill p-warn">Hygiene</span></div>
       <p><code>frontend-design</code> and <code>skill-creator</code> each exist under seven content-hash directories (<code>0120fb83da5d</code>, <code>0620a687ddd5</code>, <code>1dd995193ba2</code>, <code>4b909c3492b3</code>, <code>e18ff5086423</code>, <code>ed404106fcd8</code>, <code>unknown</code>). Unlike the semver folders these do not sort, so the newest is resolved by mtime — fragile, and it means a stale copy can win if a file is ever touched.</p>
       <p><span class="pill p-ok">Closed 2026-09-04</span> Cleared in the row-4 prune — but worth recording that this finding was <b>the right shape and the wrong size</b>: seven copies of one skill is genuinely fragile resolution, and it is also about 7 MB. The 767 MB that came back was in <code>chrome-devtools-mcp</code> and <code>hyperframes</code>, which this row does not mention. Directory <i>count</i> was a poor proxy for disk.</p>
       <div class="fix"><b>Fix:</b> clear the cache for these two plugins and let the marketplace re-fetch a single current copy.</div>
     </div>
 
-    <div class="find sev-md">
-      <div class="fh"><h3>The rubric penalises description length that nothing pays for</h3><span class="pill p-warn">Measurement</span></div>
+    <div class="find sev-md st-decl">
+      <div class="fh"><h3>The rubric penalises description length that nothing pays for</h3><span class="pill p-info">Open by decision</span><span class="pill p-warn">Measurement</span></div>
       <p><b>{{ metrics.desc_bloated }}</b> skills lose 13 of the 25 available description points for running past <code>rubric.desc.long_max</code>. <b>{{ metrics.desc_bloated_billed }} of them are billed</b> — every one sits in the vault, in a disabled plugin, or in an unset plugin, where description length is not charged to any session prefix. The penalty is calibrated for the listing and then applied uniformly, so it measures a cost these skills structurally cannot incur.</p>
       <p>Worse, it points the wrong way. <code>skill_search</code>&rsquo;s <code>scoreItem</code> weights a description hit at <b>1.5</b> per query token, so on an unbilled skill a longer description is a pure retrieval gain. Acting on the score would make {{ metrics.desc_bloated }} skills harder to find and save nothing. This is also the whole of the remaining grade-D population: {{ metrics.grade_d }} D-grade skills, {{ metrics.grade_d_billed }} of them billed.</p>
       <div class="fix"><b>Fix:</b> make the <code>desc</code> band reach-aware — charge length only where the listing bills it. Deliberately <i>not</i> done here: <code>rubric.json</code> states the weights are &ldquo;ported verbatim from scan2.py so scores stay comparable with the 2026-09-04 baseline&rdquo;, and re-banding silently re-scores all {{ metrics.total }} skills, including the closed queue rows that cite grades. Re-baselining is a decision to take deliberately, not a side effect of a cleanup.</div>
     </div>
 
-    <div class="find sev-lo">
-      <div class="fh"><h3>A collection vendors byte-identical copies of its own skills</h3><span class="pill p-info">Tidy-up</span></div>
+    <div class="find sev-lo st-decl">
+      <div class="fh"><h3>A collection vendors byte-identical copies of its own skills</h3><span class="pill p-info">Open by decision</span><span class="pill p-info">Tidy-up</span></div>
       <p><code>financial-services</code> ships <code>comps-analysis</code> four times &mdash; once under each of <code>market-researcher</code>, <code>model-builder</code>, <code>pitch-agent</code> and <code>vertical-plugins/financial-analysis</code> &mdash; all four <code>SKILL.md</code> files sharing one md5. <code>dcf-model</code>, <code>lbo-model</code> and <code>pptx-author</code> repeat four times each; <code>xlsx-author</code> seven, <code>audit-xls</code> six. This is distinct from the cached-plugin duplication above: those are superseded <i>versions</i>, these are same-version fan-out inside a single upstream repo.</p>
       <div class="fix"><b>Fix:</b> none on this machine. It is upstream vendoring, it costs no listing tokens, and every copy is separately addressable since ids became qualified. Recorded so the repeat names are not mistaken for a local mistake.</div>
     </div>
 
-    <div class="find sev-lo">
-      <div class="fh"><h3>Two generations of the same skill installed side by side</h3><span class="pill p-info">Tidy-up</span></div>
+    <div class="find sev-lo st-decl">
+      <div class="fh"><h3>Two generations of the same skill installed side by side</h3><span class="pill p-info">Open by decision</span><span class="pill p-info">Tidy-up</span></div>
       <p><code>design-taste-frontend</code> / <code>design-taste-frontend-v1</code>, <code>shadcn</code> / <code>shadcn-ui</code>, <code>humanizer</code> / <code>humanize-dev-artifacts</code> / <code>no-ai-slop</code>, <code>remotion</code> / <code>remotion-best-practices</code>, <code>taste-design</code> / <code>gpt-taste</code> / <code>design-taste-frontend</code>. The router already flags the humanizer overlap; the others are undocumented.</p>
       <div class="fix"><b>Fix:</b> pick a winner per pair and delete or vault the loser. Each retired listed skill is roughly 90–160 tokens back per session.</div>
     </div>
 
-    <div class="find sev-ok">
-      <div class="fh"><h3>31 vault skills had no frontmatter at all</h3><span class="pill p-ok">Fixed 2026-09-05</span></div>
+    <div class="find sev-ok st-closed">
+      <div class="fh"><h3>31 vault skills had no frontmatter at all</h3><span class="pill p-ok">Closed 2026-09-05</span></div>
       <p>29 of them arrived in one bad import under <code>corporate/02-finance-accounting/</code>, plus <code>check-model</code> (<code>name:</code>-only) and two <code>drupal-claude-skills</code> entries (no <code>name:</code>). Each had a well-written <code>description:</code> paragraph stranded in the <i>body</i>, outside any <code>---</code> block. The failure was quiet by construction: <code>lib.mjs</code> falls back to the first non-heading body line, which in these files <i>is</i> the string <code>description: Track and analyze&hellip;</code> &mdash; so search returned a plausible-looking snippet while the real description was never indexed, and the label itself polluted the haystack.</p>
       <div class="fix"><b>Fix applied:</b> descriptions hoisted into real YAML frontmatter as folded block scalars (<code>&gt;-</code>), the one form that survives the colons and quotes these texts contain. Verified through two independent parsers &mdash; the router&rsquo;s own <code>parseFrontmatter</code> and PyYAML &mdash; at 31/31, with <b>0</b> still relying on the fallback. Grade D fell to {{ metrics.grade_d }} from the 39 measured on 2026-09-04; billed listing cost changed by <b>0 tokens</b>, because none of the 31 is billed. No skill was removed. Guard: <code>desc_missing</code> now reads <b>{{ metrics.desc_missing }}</b>.</p></div>
     </div>

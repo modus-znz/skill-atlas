@@ -130,6 +130,17 @@ input[type=search]:focus-visible{outline:2px solid var(--brown-500);outline-offs
 .find.sev-md{border-left-color:var(--warn)}
 .find.sev-lo{border-left-color:var(--info)}
 .find.sev-ok{border-left-color:var(--ok)}
+/* Finding STATUS is orthogonal to severity: severity says how bad it was,
+   status says whether it is still work. Rendering only severity is why a
+   fixed Critical finding still read as an open red item. */
+.find.st-closed{opacity:.6}
+.find.st-closed:hover,.find.st-closed:focus-within{opacity:1}
+.find.st-closed .fh h3{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:var(--ink-2)}
+.find.st-closed{border-left-color:var(--ok)!important}
+.find.st-decl{border-left-color:var(--info)!important;border-left-style:dashed}
+.p-mute{color:var(--ink-2);border-color:var(--line);background:transparent;opacity:.8}
+.ledger{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 14px;font-family:var(--display);font-size:12px}
+.ledger b{font-weight:700}
 .find .fh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .find .fh h3{flex:1;min-width:200px}
 .find p{font-size:14px;color:var(--ink-2);max-width:78ch}
