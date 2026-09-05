@@ -12,7 +12,7 @@ lacked: a way to re-run without the report quietly starting to lie.
 
 ```bash
 python3 atlas.py all        # scan -> reach -> build -> render
-python3 atlas.py doctor     # classification drift + stale narrative
+python3 atlas.py doctor     # problems (exit 1) vs notices (exit 0)
 python3 atlas.py diff       # what moved since the previous run
 open dist/skill-atlas.html
 ```
@@ -28,6 +28,7 @@ No packages to install.
 scan    walk 3 roots, parse frontmatter, dedupe, score   -> data/skills.json
 reach   ask skill-router/lib.mjs who wins each bare name -> data/router-index.json
 build   category tree + rollups + metrics + snapshot     -> data/report-data.json
+                                                         +  data/skill-keys.json
 render  template + content/ + data                       -> dist/skill-atlas.html
 ```
 
@@ -95,3 +96,24 @@ The published artifact counted 951 distinct skills on 2026-09-04. This pipeline 
 reports 2,075 — the vault grew 693 → 1,819. A fresh scan *should* differ; `atlas.py diff`
 exists to explain the delta. Success is "renders, and the change is accounted for", never
 "byte-matches the artifact".
+
+## Two things worth knowing
+
+**`doctor` separates problems from notices.** A problem is drift the pipeline
+cannot render around — an unclassified skill has no home in the tree, a stale
+taxonomy entry names a skill that is gone, a stale router index makes
+reachability a lie. Those exit 1. A *notice* is stale narrative: a paragraph
+written on 2026-09-04 describing that day's census is correct about the past,
+and the report already badges it inline. Failing the build on it would make
+every historical passage a permanent error and train everyone to ignore the
+exit code, so notices report and exit 0.
+
+**Skill identity lives outside the payload.** `name|source` collapses 92 of
+2,075 rows — seven vault collections each ship an `xlsx-author` — and even
+name-plus-treepath still collapses three. So `build` writes an index-aligned
+`data/skill-keys.json` of realpaths beside `report-data.json`, and `snapshot`
+copies it into each run. `atlas.py diff` keys on it and is therefore exact;
+runs recorded without it fall back to the lossy key so they still diff at all.
+Keeping ~100 KB of absolute paths out of `report-data.json` also keeps them off
+the rendered page, which matters because that page embeds vault descriptions
+already (see Privacy).
