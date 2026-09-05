@@ -6,7 +6,7 @@ and is worth more than live filtering against a backend.
 """
 import json, os
 
-from . import config, content, dataset
+from . import config, content, dataset, tables
 
 
 def _kpi_cards(metrics, prev):
@@ -46,15 +46,16 @@ def render(strict_content=True):
     if len(runs) > 1:
         prev = dataset.load_run(runs[-2]).get("metrics")
 
+    tbl = tables.build_all(payload)
     tpl = open(config.TEMPLATE, encoding="utf-8").read()
     frags = content.load_all()
 
     warnings = []
     for cid, frag in frags.items():
-        body, missing = content.interpolate(frag["body"], metrics)
+        body, missing = content.interpolate(frag["body"], metrics, tbl)
         broken = content.check_assertions(frag["fm"], metrics)
         if missing:
-            warnings.append(f"{frag['file']}: unknown metric(s) {sorted(set(missing))}")
+            warnings.append(f"{frag['file']}: unknown slot(s) {sorted(set(missing))}")
         if broken:
             warnings.append(f"{frag['file']}: stale assertion(s) " +
                             ", ".join(f"{k} {w}->{n}" for k, w, n in broken))

@@ -26,26 +26,10 @@ assert: {listed: 46, hidden: 101}
     </div>
 
     <div>
-      <h3 style="margin-bottom:10px">Plugin state — 15 installed, 11 on</h3>
+      <h3 style="margin-bottom:10px">Plugin state — {{ metrics.plugin_installed }} installed, {{ metrics.plugin_on_installed }} on</h3>
       <div class="tw"><table>
         <thead><tr><th>Plugin</th><th class="n">Skills</th><th class="n">Versions cached</th><th class="n">Listing tok</th><th>State</th></tr></thead>
-        <tbody>
-          <tr><td>superpowers</td><td class="n">14</td><td class="n">1</td><td class="n">598</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>gsap-skills</td><td class="n">8</td><td class="n">1</td><td class="n">749</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>ui-ux-pro-max</td><td class="n">7</td><td class="n">2</td><td class="n">1,413</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>chrome-devtools-mcp</td><td class="n">6</td><td class="n">2</td><td class="n">879</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>video-prep</td><td class="n">2</td><td class="n">1</td><td class="n">209</td><td><span class="pill p-ok">On</span> · 441 MB</td></tr>
-          <tr><td>frontend-design</td><td class="n">1</td><td class="n">7</td><td class="n">426</td><td><span class="pill p-ok">On</span> · <span class="pill p-bad">7 copies</span></td></tr>
-          <tr><td>video-captions</td><td class="n">1</td><td class="n">1</td><td class="n">151</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>claude-video-digest</td><td class="n">1</td><td class="n">1</td><td class="n">137</td><td><span class="pill p-ok">On</span></td></tr>
-          <tr><td>hyperframes</td><td class="n"><s style="opacity:.45">26</s> 20</td><td class="n"><s style="opacity:.45">3</s> 1</td><td class="n">13,616</td><td><span class="pill p-mute">Off</span> · <span class="pill p-ok">2026-09-04</span> router corrected ~19 &rarr; 20; the 26 unioned skills across three cached versions</td></tr>
-          <tr><td>expo</td><td class="n">24</td><td class="n"><s style="opacity:.45">3</s> 1</td><td class="n">7,956</td><td><span class="pill p-mute">Off</span> · <span class="pill p-ok">2026-09-04</span> router corrected ~21 &rarr; 24; two stale versions pruned</td></tr>
-          <tr><td>figma</td><td class="n">14</td><td class="n">1</td><td class="n">2,161</td><td><span class="pill p-info">Unset</span> · project scope</td></tr>
-          <tr><td>supabase</td><td class="n">2</td><td class="n">1</td><td class="n">344</td><td><span class="pill p-mute">Off</span></td></tr>
-          <tr><td>skill-creator</td><td class="n">1</td><td class="n">7</td><td class="n">646</td><td><span class="pill p-mute">Off</span> · <span class="pill p-bad">7 copies</span></td></tr>
-          <tr><td>claude-code-setup</td><td class="n">1</td><td class="n">1</td><td class="n">—</td><td><span class="pill p-mute">Off</span></td></tr>
-          <tr><td>claude-md-management</td><td class="n">1</td><td class="n">1</td><td class="n">—</td><td><span class="pill p-mute">Off</span></td></tr>
-        </tbody>
+        <tbody>{{ table.plugins }}</tbody>
       </table></div>
       <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">hyperframes is the single most expensive thing that could be switched on: <b>13,616 tokens</b> of standing cost for 26 skills, on a machine with no hyperframes artifact anywhere on disk. Keeping it off is correct — but so is deleting the three cached versions, since nothing loads them.</p>
     </div>

@@ -50,15 +50,7 @@ assert: {listing_over_budget: 0, vault: 693}
       <h3 style="margin-bottom:10px">Vault load weight by collection</h3>
       <div class="tw"><table>
         <thead><tr><th>Collection</th><th class="n">Skills</th><th class="n">Reachable</th><th class="n">Total load tok</th><th class="n">Avg per skill</th><th class="n">Bundle</th><th class="n">Avg score</th></tr></thead>
-        <tbody>
-          <tr><td>ecc</td><td class="n">286</td><td class="n"><span class="pill p-ok">283 · 99%</span></td><td class="n">712,012</td><td class="n">2,490</td><td class="n">3.47 MB</td><td class="n">73.7</td></tr>
-          <tr><td>corporate</td><td class="n">166</td><td class="n"><span class="pill p-warn">156 · 94%</span></td><td class="n">446,603</td><td class="n">2,690</td><td class="n">2.32 MB</td><td class="n">69.1</td></tr>
-          <tr><td>knowledge-work</td><td class="n">110</td><td class="n"><span class="pill p-warn">87 · 79%</span></td><td class="n">241,191</td><td class="n">2,193</td><td class="n">1.10 MB</td><td class="n">73.6</td></tr>
-          <tr><td>financial-services</td><td class="n">57</td><td class="n"><span class="pill p-bad">17 · 30%</span></td><td class="n">159,229</td><td class="n">2,794</td><td class="n">0.77 MB</td><td class="n">70.4</td></tr>
-          <tr><td>agent-skills</td><td class="n">25</td><td class="n"><span class="pill p-ok">25 · 100%</span></td><td class="n">93,098</td><td class="n">3,724</td><td class="n">0.38 MB</td><td class="n">72.3</td></tr>
-          <tr><td>openaccountant</td><td class="n">44</td><td class="n"><span class="pill p-ok">43 · 98%</span></td><td class="n">46,670</td><td class="n">1,061</td><td class="n">0.18 MB</td><td class="n">74.0</td></tr>
-          <tr><td>anthropic-doc-skills</td><td class="n">5</td><td class="n"><span class="pill p-ok">5 · 100%</span></td><td class="n">16,641</td><td class="n">3,328</td><td class="n">3.45 MB</td><td class="n">65.8</td></tr>
-        </tbody>
+        <tbody>{{ table.vault_collections }}</tbody>
       </table></div>
       <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">At census time only <b>616 of the 693</b> were reachable by name; the <i>Reachable</i> column is where a collection silently lost capability to a name clash, and <code>financial-services</code> lost seven skills in ten. <span class="pill p-ok">Fixed 2026-09-04</span> — that column now reads 100% everywhere, and the refresh took the vault to 708 that day; it stands at <b>{{ metrics.vault }}</b> now. The vault holds <b>{{ metrics.load_tok_vault }} tokens</b> of skill body. None of it is billed until something loads it — which is exactly why the vault is the right home for breadth, and why moving rarely-used active skills into it is nearly always the right call.</p>
     </div>

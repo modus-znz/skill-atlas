@@ -68,18 +68,26 @@ def fmt(v):
     return f"{v:,}" if isinstance(v, int) else str(v)
 
 
-def interpolate(body, metrics):
-    """Substitute {{ metrics.key }}. An unknown key is left visible, not silently blanked."""
+def interpolate(body, metrics, tables=None):
+    """Substitute {{ metrics.key }} and {{ table.name }}.
+
+    An unknown key is left visible, not silently blanked -- a blank renders as a
+    plausible empty cell, whereas `?key` in red is impossible to ship by accident.
+    Tables are whole generated row-sets rather than single values; they exist so a
+    table's ROW SET stays as measured as its cells.
+    """
     missing = []
+    tables = tables or {}
 
     def sub(m):
-        k = m.group(1)
-        if k not in metrics:
-            missing.append(k)
+        kind, k = m.group(1), m.group(2)
+        src = metrics if kind == "metrics" else tables
+        if k not in src:
+            missing.append(f"{kind}.{k}")
             return f"<span class='pill p-bad'>?{k}</span>"
-        return fmt(metrics[k])
+        return fmt(src[k]) if kind == "metrics" else src[k]
 
-    return re.sub(r"\{\{\s*metrics\.([A-Za-z0-9_]+)\s*\}\}", sub, body), missing
+    return re.sub(r"\{\{\s*(metrics|table)\.([A-Za-z0-9_]+)\s*\}\}", sub, body), missing
 
 
 def check_assertions(fm, metrics):

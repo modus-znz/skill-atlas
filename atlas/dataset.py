@@ -136,6 +136,13 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     def lt(*states):
         return sum(s["lt"] for s in skills if s["r"] in states)
 
+    # One entry per installed plugin -> the state its skills report. A plugin's
+    # skills all share a state, so `max` is just picking that shared value.
+    plugin_dirs = {}
+    for s_ in skills:
+        if s_["s"] == "plugin":
+            plugin_dirs[s_["p"][1]] = s_["r"]
+
     def ld(*states):
         return sum(s["ld"] for s in skills if s["r"] in states)
 
@@ -193,6 +200,11 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "listing_avoided_ratio": round(avoided / billed, 1) if billed else 0,
         "load_tok_total": sum(s["ld"] for s in skills),
         "load_tok_vault": ld("vault"),
+        # Installed plugins, and how many are enabled -- counted from the cache's
+        # own directory set, not from settings.json, so a plugin that is enabled
+        # but no longer cached cannot inflate the "installed" figure.
+        "plugin_installed": len(plugin_dirs),
+        "plugin_on_installed": len([d for d, st in plugin_dirs.items() if st == "plugin-on"]),
         # D-graded skills that are actually billed in the listing. The health
         # panel claims the worst skills cost nothing because they sit in the
         # vault; that only stays true while this reads 0, so it is measured
