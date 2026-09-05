@@ -25,6 +25,7 @@ def cmd_scan(argv):
 def cmd_reach(argv):
     config.ensure_dirs()
     mjs = os.path.join(config.PROJECT, "bin", "router_index.mjs")
+    sys.stdout.flush()  # node writes unbuffered; keep the stage log in real order
     r = subprocess.run(["node", mjs, config.ROUTER_JSON])
     return r.returncode
 
