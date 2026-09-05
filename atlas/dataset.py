@@ -32,6 +32,23 @@ def load_router(strict=True):
         return json.load(f)
 
 
+def qualified_ids(ri):
+    """realpath -> the router's own qualified id (`financial-services/dcf-model`).
+
+    scan.py used to synthesise this as slugify(name), which is the BARE slug and
+    therefore NOT unique -- 72 names shared one value across 100 rows, so anything
+    keyed on it silently collapsed duplicate skills into a single row. The router
+    already computes the unique id in buildIndex(); this joins it in rather than
+    guessing. Plugin-cache rows are absent by design (isExcludedPluginPath), and
+    get "" -- they are not router-addressable, and inventing an id would relapse
+    into the same fiction.
+    """
+    out = {}
+    for e in ri["winners"] + ri["shadowed"]:
+        out[os.path.realpath(e["path"])] = e.get("qualified_id", "")
+    return out
+
+
 def resolve_shadows(ri):
     """Split shadow events into genuine ones and phantoms.
 
@@ -54,6 +71,7 @@ def build(strict=True):
     rows = [s for s in scan["skills"] if s.get("is_latest")]
     ri = load_router(strict=strict)
     genuine, phantom = resolve_shadows(ri)
+    qual = qualified_ids(ri)
     tax = Taxonomy()
 
     skills = []
@@ -72,7 +90,7 @@ def build(strict=True):
             "co": s["collision_n"] if s["collides"] else 0,
             "dp": s.get("dup_copies", 1), "sp": s["score_parts"],
             "sh": s["realpath"] in genuine,
-            "rid": s.get("router_id", ""),
+            "rid": qual.get(s["realpath"], ""),
             "sd": [x for x in s["subdirs"] if x in config.roots()["depth_subdirs"]],
         })
 
@@ -155,6 +173,8 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         return round(sum(xs) / len(xs), 1) if xs else 0
 
     billed = lt("listed", "plugin-on")
+    bloat_max = config.rubric()["desc"]["long_max"]
+    bloated = [s_ for s_ in skills if s_["dl"] > bloat_max]
     # "Avoided" means tokens a listing CANDIDATE is not spending: active skills
     # hidden by skillOverrides, and plugin skills switched off or left unset.
     # The vault is excluded on purpose -- it is not a candidate at any setting,
@@ -180,6 +200,21 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "plugin_off": reach.get("plugin-off", 0),
         "plugin_unset": reach.get("plugin-unset", 0),
         # The session listing bills active-listed AND enabled-plugin skills alike.
+        # Descriptions the rubric penalises as "bloated" (> rubric.desc.long_max),
+        # split by whether that length is actually PAID for. The length penalty is
+        # calibrated for the session listing, but applied uniformly -- so a vault
+        # or disabled-plugin skill loses 13 points for characters no session ever
+        # bills, while those same characters help skill_search (scoreItem weights a
+        # description hit 1.5). Measured here so the finding cannot drift.
+        # Skills whose frontmatter yields no description at all. These are not
+        # merely low-scoring: the router falls back to the first non-heading body
+        # line, which for a file with NO frontmatter block is the literal text
+        # "description: ..." -- so search indexes the label instead of the prose
+        # and the defect hides behind a plausible-looking result. Guard metric:
+        # anything but 0 means a malformed import landed.
+        "desc_missing": len([s_ for s_ in skills if s_["dl"] == 0]),
+        "desc_bloated": len(bloated),
+        "desc_bloated_billed": len([s_ for s_ in bloated if s_["r"] in ("listed", "plugin-on")]),
         "listing_tok": billed,
         "listing_tok_active": lt("listed"),
         "listing_tok_plugin": lt("plugin-on"),

@@ -1,8 +1,8 @@
 ---
 id: health
 title: Library health
-asserted_on: 2026-09-04
-assert: {phantom_shadows: 0, stale_taxonomy: 0, vault: 693, total: 951}
+asserted_on: 2026-09-05
+assert: {phantom_shadows: 0, stale_taxonomy: 0, unclassified: 0, desc_bloated_billed: 0, desc_missing: 0}
 ---
 <div class="sec-head"><h2>Health &amp; findings</h2><p>Ranked by what it costs to leave alone.</p></div>
   <div class="stack">
@@ -48,10 +48,29 @@ assert: {phantom_shadows: 0, stale_taxonomy: 0, vault: 693, total: 951}
       <div class="fix"><b>Fix:</b> clear the cache for these two plugins and let the marketplace re-fetch a single current copy.</div>
     </div>
 
+    <div class="find sev-md">
+      <div class="fh"><h3>The rubric penalises description length that nothing pays for</h3><span class="pill p-warn">Measurement</span></div>
+      <p><b>{{ metrics.desc_bloated }}</b> skills lose 13 of the 25 available description points for running past <code>rubric.desc.long_max</code>. <b>{{ metrics.desc_bloated_billed }} of them are billed</b> — every one sits in the vault, in a disabled plugin, or in an unset plugin, where description length is not charged to any session prefix. The penalty is calibrated for the listing and then applied uniformly, so it measures a cost these skills structurally cannot incur.</p>
+      <p>Worse, it points the wrong way. <code>skill_search</code>&rsquo;s <code>scoreItem</code> weights a description hit at <b>1.5</b> per query token, so on an unbilled skill a longer description is a pure retrieval gain. Acting on the score would make {{ metrics.desc_bloated }} skills harder to find and save nothing. This is also the whole of the remaining grade-D population: {{ metrics.grade_d }} D-grade skills, {{ metrics.grade_d_billed }} of them billed.</p>
+      <div class="fix"><b>Fix:</b> make the <code>desc</code> band reach-aware — charge length only where the listing bills it. Deliberately <i>not</i> done here: <code>rubric.json</code> states the weights are &ldquo;ported verbatim from scan2.py so scores stay comparable with the 2026-09-04 baseline&rdquo;, and re-banding silently re-scores all {{ metrics.total }} skills, including the closed queue rows that cite grades. Re-baselining is a decision to take deliberately, not a side effect of a cleanup.</div>
+    </div>
+
+    <div class="find sev-lo">
+      <div class="fh"><h3>A collection vendors byte-identical copies of its own skills</h3><span class="pill p-info">Tidy-up</span></div>
+      <p><code>financial-services</code> ships <code>comps-analysis</code> four times &mdash; once under each of <code>market-researcher</code>, <code>model-builder</code>, <code>pitch-agent</code> and <code>vertical-plugins/financial-analysis</code> &mdash; all four <code>SKILL.md</code> files sharing one md5. <code>dcf-model</code>, <code>lbo-model</code> and <code>pptx-author</code> repeat four times each; <code>xlsx-author</code> seven, <code>audit-xls</code> six. This is distinct from the cached-plugin duplication above: those are superseded <i>versions</i>, these are same-version fan-out inside a single upstream repo.</p>
+      <div class="fix"><b>Fix:</b> none on this machine. It is upstream vendoring, it costs no listing tokens, and every copy is separately addressable since ids became qualified. Recorded so the repeat names are not mistaken for a local mistake.</div>
+    </div>
+
     <div class="find sev-lo">
       <div class="fh"><h3>Two generations of the same skill installed side by side</h3><span class="pill p-info">Tidy-up</span></div>
       <p><code>design-taste-frontend</code> / <code>design-taste-frontend-v1</code>, <code>shadcn</code> / <code>shadcn-ui</code>, <code>humanizer</code> / <code>humanize-dev-artifacts</code> / <code>no-ai-slop</code>, <code>remotion</code> / <code>remotion-best-practices</code>, <code>taste-design</code> / <code>gpt-taste</code> / <code>design-taste-frontend</code>. The router already flags the humanizer overlap; the others are undocumented.</p>
       <div class="fix"><b>Fix:</b> pick a winner per pair and delete or vault the loser. Each retired listed skill is roughly 90–160 tokens back per session.</div>
+    </div>
+
+    <div class="find sev-ok">
+      <div class="fh"><h3>31 vault skills had no frontmatter at all</h3><span class="pill p-ok">Fixed 2026-09-05</span></div>
+      <p>29 of them arrived in one bad import under <code>corporate/02-finance-accounting/</code>, plus <code>check-model</code> (<code>name:</code>-only) and two <code>drupal-claude-skills</code> entries (no <code>name:</code>). Each had a well-written <code>description:</code> paragraph stranded in the <i>body</i>, outside any <code>---</code> block. The failure was quiet by construction: <code>lib.mjs</code> falls back to the first non-heading body line, which in these files <i>is</i> the string <code>description: Track and analyze&hellip;</code> &mdash; so search returned a plausible-looking snippet while the real description was never indexed, and the label itself polluted the haystack.</p>
+      <div class="fix"><b>Fix applied:</b> descriptions hoisted into real YAML frontmatter as folded block scalars (<code>&gt;-</code>), the one form that survives the colons and quotes these texts contain. Verified through two independent parsers &mdash; the router&rsquo;s own <code>parseFrontmatter</code> and PyYAML &mdash; at 31/31, with <b>0</b> still relying on the fallback. Grade D fell to {{ metrics.grade_d }} from the 39 measured on 2026-09-04; billed listing cost changed by <b>0 tokens</b>, because none of the 31 is billed. No skill was removed. Guard: <code>desc_missing</code> now reads <b>{{ metrics.desc_missing }}</b>.</p></div>
     </div>
 
     <div class="find sev-ok">

@@ -17,18 +17,19 @@
   ],
   "families": {
     "Process & meta": [
-      "karpathy-guidelines",
-      "token-lean",
-      "claude-router",
-      "graphify",
       "agent-skills-spec",
       "book-to-skill",
+      "claude-router",
+      "design-md",
       "design-skill-registry",
-      "full-output-enforcement",
       "enhance-prompt",
-      "philosophical-brain",
+      "full-output-enforcement",
+      "graphify",
       "homelab-catalog",
-      "design-md"
+      "karpathy-guidelines",
+      "orchestrator",
+      "philosophical-brain",
+      "token-lean"
     ],
     "Frontend & UI craft": [
       "design-taste-frontend",

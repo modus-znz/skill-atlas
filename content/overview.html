@@ -1,8 +1,8 @@
 ---
 id: overview
 title: Overview
-asserted_on: 2026-09-04
-assert: {unclassified: 0, phantom_shadows: 0, vault: 693, active: 149}
+asserted_on: 2026-09-05
+assert: {unclassified: 0, phantom_shadows: 0}
 ---
 <div class="stack">
     <p class="lede">The working assumption going in was “200+ skills”. The real number is <b>{{ metrics.total }} distinct skills</b> across three roots, from <b>{{ metrics.files_scanned }}</b> <code>SKILL.md</code> files on disk — the {{ metrics.stale_copies }}-file gap is duplicate cached plugin versions, not extra capability. Everything below is computed from that scan; nothing is carried over from prose.</p>
@@ -26,7 +26,7 @@ assert: {unclassified: 0, phantom_shadows: 0, vault: 693, active: 149}
         </div>
         <div class="find sev-ok">
           <div class="fh"><h3>Hiding 104 skills is working, and it is worth 5,603 tokens a session</h3><span class="pill p-ok">Confirmed</span></div>
-          <p><span class="pill p-ok">Updated 2026-09-04</span> The listed active skills are now <b>46</b> costing <b>4,312 tokens</b> of name-plus-description in every session prefix &mdash; <code>capacitor-mobile-build</code> (row 9) was deliberately left <i>listed</i> so mobile build work selects it automatically, at ~102 tokens; <code>odoo-deploy</code> (row 7) was registered <i>hidden</i> instead, so it costs nothing outside the addons repo. The 105 hidden ones would add <b>5,603</b> more — the single largest deliberate saving on the machine, and it more than doubles the listing if reversed. The <code>skillOverrides</code> strategy is sound and should be extended, not relaxed.</p>
+          <p><span class="pill p-ok">Updated 2026-09-04</span> The listed active skills are now <b>{{ metrics.listed }}</b> costing <b>{{ metrics.listing_tok_active }} tokens</b> of name-plus-description in every session prefix &mdash; <code>capacitor-mobile-build</code> (row 9) was deliberately left <i>listed</i> so mobile build work selects it automatically, at ~102 tokens; <code>odoo-deploy</code> (row 7) was registered <i>hidden</i> instead, so it costs nothing outside the addons repo. The {{ metrics.hidden }} hidden ones would add <b>{{ metrics.listing_tok_hidden }}</b> more — the single largest deliberate saving on the machine, and it more than doubles the listing if reversed. The <code>skillOverrides</code> strategy is sound and should be extended, not relaxed.</p>
         </div>
         <div class="find sev-md">
           <div class="fh"><h3>77 vault skills are installed and structurally unreachable</h3><span class="pill p-bad">Reachability</span></div>

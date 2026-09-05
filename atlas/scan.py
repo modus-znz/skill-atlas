@@ -167,7 +167,6 @@ def token_estimates(rows, cpt):
         s["listing_tok"] = round(entry_chars / cpt)
         s["listing_chars_billed"] = entry_chars
         s["load_tok"] = round(s["skill_chars"] / cpt)
-        s["router_id"] = slugify(s["name"])
     return rows
 
 
