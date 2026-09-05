@@ -12,6 +12,9 @@ TEMPLATE = os.path.join(PROJECT, "templates", "atlas.html.tpl")
 SKILLS_JSON = os.path.join(DATA_DIR, "skills.json")
 ROUTER_JSON = os.path.join(DATA_DIR, "router-index.json")
 REPORT_JSON = os.path.join(DATA_DIR, "report-data.json")
+# Index-aligned identity for report-data.json's skills[], kept OUT of the
+# payload so the embedded page pays nothing for it. See dataset.build.
+KEYS_JSON = os.path.join(DATA_DIR, "skill-keys.json")
 OUT_HTML = os.path.join(DIST_DIR, "skill-atlas.html")
 
 

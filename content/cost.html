@@ -15,15 +15,15 @@ assert: {listing_over_budget: 0, vault: 693}
         <tbody>
           <tr><td>Active — listed</td><td class="n">{{ metrics.listed }}</td><td class="n">{{ metrics.listing_tok_active }}</td><td><span class="pill p-warn">Paid</span></td></tr>
           <tr><td>Plugin — enabled</td><td class="n">{{ metrics.plugin_on }}</td><td class="n">{{ metrics.listing_tok_plugin }}</td><td><span class="pill p-warn">Paid</span></td></tr>
-          <tr><td><b>Total standing cost</b></td><td class="n"><b>85</b></td><td class="n"><b>7,482</b></td><td><span class="pill p-warn">Paid</span></td></tr>
-          <tr><td>Active — hidden</td><td class="n">100</td><td class="n">4,923</td><td><span class="pill p-ok">Avoided</span></td></tr>
-          <tr><td>Plugin — disabled</td><td class="n">55</td><td class="n">8,060</td><td><span class="pill p-ok">Avoided</span></td></tr>
-          <tr><td>Plugin — unset (figma)</td><td class="n">14</td><td class="n">2,161</td><td><span class="pill p-ok">Avoided</span></td></tr>
-          <tr><td>Vault</td><td class="n">693</td><td class="n">0</td><td><span class="pill p-ok">Never listed</span></td></tr>
-          <tr><td><b>Total avoided</b></td><td class="n"><b>862</b></td><td class="n"><b>15,144</b></td><td><span class="pill p-ok">Saved</span></td></tr>
+          <tr><td><b>Total standing cost</b></td><td class="n"><b>{{ metrics.listing_entries }}</b></td><td class="n"><b>{{ metrics.listing_tok }}</b></td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td>Active — hidden</td><td class="n">{{ metrics.hidden }}</td><td class="n">{{ metrics.listing_tok_hidden }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — disabled</td><td class="n">{{ metrics.plugin_off }}</td><td class="n">{{ metrics.listing_tok_plugin_off }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — unset</td><td class="n">{{ metrics.plugin_unset }}</td><td class="n">{{ metrics.listing_tok_plugin_unset }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td><b>Total avoided</b></td><td class="n"><b>{{ metrics.listing_avoided_n }}</b></td><td class="n"><b>{{ metrics.listing_avoided_tok }}</b></td><td><span class="pill p-ok">Saved</span></td></tr>
+          <tr><td>Vault</td><td class="n">{{ metrics.vault }}</td><td class="n">0</td><td><span class="pill p-ok">Never listed</span></td></tr>
         </tbody>
       </table></div>
-      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Read that bottom line carefully: the visibility discipline on this machine is saving <b>roughly twice what it spends</b>. Turning everything on would take the skill prefix from 7,482 to 22,626 tokens on every request — before a single skill is used.</p>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Read that bottom line carefully: the visibility discipline on this machine avoids <b>{{ metrics.listing_avoided_ratio }}× what it spends</b>. Turning every hidden skill and disabled plugin on would take the skill prefix from {{ metrics.listing_tok }} to <b>{{ metrics.listing_all_on_tok }}</b> tokens on every request — before a single skill is used. The vault sits outside that trade entirely: it is not a listing candidate at any setting, which is why it costs 0 rather than appearing in the avoided column. Were its {{ metrics.vault }} skills listable, they would want <b>{{ metrics.listing_tok_vault }}</b> tokens, against a listing budget of {{ metrics.listing_budget_tok }}. That gap is the whole argument for the vault.</p>
     </div>
 
     <div>
@@ -62,4 +62,4 @@ assert: {listing_over_budget: 0, vault: 693}
       </table></div>
       <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">At census time only <b>616 of the 693</b> were reachable by name; the <i>Reachable</i> column is where a collection silently lost capability to a name clash, and <code>financial-services</code> lost seven skills in ten. <span class="pill p-ok">Fixed 2026-09-04</span> — that column now reads 100% everywhere, and the vault stands at <b>708</b> after the upstream refresh. The vault holds <b>1.72 million tokens</b> of skill body. None of it is billed until something loads it — which is exactly why the vault is the right home for breadth, and why moving rarely-used active skills into it is nearly always the right call.</p>
     </div>
-  </div
+  </div>

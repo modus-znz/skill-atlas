@@ -179,7 +179,6 @@ ul.list b{color:var(--ink)}
 <!-- ======================= OVERVIEW ======================= -->
 <section class="panel" id="p-overview" role="tabpanel">
 <!--CONTENT:overview-->
-  >
 </section>
 
 <!-- ======================= CATEGORIES ======================= -->
@@ -244,31 +243,26 @@ ul.list b{color:var(--ink)}
 <!-- ======================= HEALTH ======================= -->
 <section class="panel" id="p-health" role="tabpanel" hidden>
 <!--CONTENT:health-->
-  >
 </section>
 
 <!-- ======================= COST ======================= -->
 <section class="panel" id="p-cost" role="tabpanel" hidden>
 <!--CONTENT:cost-->
-  >
 </section>
 
 <!-- ======================= CONFIG ======================= -->
 <section class="panel" id="p-config" role="tabpanel" hidden>
 <!--CONTENT:config-->
-  >
 </section>
 
 <!-- ======================= UPSTREAM ======================= -->
 <section class="panel" id="p-upstream" role="tabpanel" hidden>
 <!--CONTENT:upstream-->
-  >
 </section>
 
 <!-- ======================= RUBRIC ======================= -->
 <section class="panel" id="p-rubric" role="tabpanel" hidden>
 <!--CONTENT:rubric-->
-  >
 </section>
 
 <p class="foot">Computed from a filesystem scan of <code>~/.claude/skills</code>, <code>~/.claude/skill-vault</code> and <code>~/.claude/plugins/cache</code>, plus <code>settings.json</code> and the managed policy file. Counts, scores and token estimates are reproducible from that scan. Density verdicts and the findings above are judgement, grounded in the 25 project roots on this machine. Typography and palette follow the Mchuzi Suite design tokens.<br><br><b>Revision 2026-09-04 — all nine upgrade-queue rows applied.</b> Struck-through figures are the census state; the bold figure beside each is what is on disk now. Three rows turned out to be measured wrong and say so where they stand rather than being quietly rewritten: row 4 blamed 7 MB of hash directories for 767 MB that was elsewhere, row 5 counted four short descriptions where there were ten, and row 8 called <code>financial-services</code> drifted when it was already at upstream tip. One target was missed on purpose — row 3 asked for a ~6 KB <code>claude-router</code> and got ~26 KB, because the two sections that make it worth loading are 15 KB between them. The <b>per-skill list</b> below is the original census, unmodified. In the tables above, a struck-through figure is the census value and the bold figure beside it is what is on disk now.</p>

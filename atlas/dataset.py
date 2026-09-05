@@ -57,8 +57,10 @@ def build(strict=True):
     tax = Taxonomy()
 
     skills = []
+    keys = []  # realpath per row, index-aligned with skills[]
     for s in rows:
         p = tax.treepath(s)
+        keys.append(s["realpath"])
         skills.append({
             "n": s["name"], "s": s["source"], "p": p,
             "d": s["desc"][:230], "dl": s["desc_len"],
@@ -104,6 +106,14 @@ def build(strict=True):
     config.ensure_dirs()
     with open(config.REPORT_JSON, "w", encoding="utf-8") as f:
         json.dump(payload, f, separators=(",", ":"))
+    # Identity lives in a sidecar, not in the payload. `name|source` collapses 92
+    # of 2,075 rows (seven vault collections ship an `xlsx-author`), and even
+    # name+treepath still collapses 3 -- a diff keyed on either silently drops
+    # skills it should be reporting. realpath is exact, and holding it outside
+    # report-data.json keeps ~100 KB of paths off the rendered page.
+    with open(config.KEYS_JSON, "w", encoding="utf-8") as f:
+        json.dump({"generated": payload["generated"], "keys": keys}, f,
+                  separators=(",", ":"))
     snapshot(payload)
     return payload
 
@@ -118,6 +128,22 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     for s in skills:
         grades[s["g"]] = grades.get(s["g"], 0) + 1
     listed = [s for s in skills if s["r"] == "listed"]
+
+    # Listing tokens for a set of reachability states. The cost panel tabulates
+    # both what the listing bills and what visibility discipline avoids, so both
+    # halves have to be measured -- a table where only the paid rows update
+    # reads as current while quietly serving last month's savings figure.
+    def lt(*states):
+        return sum(s["lt"] for s in skills if s["r"] in states)
+
+    billed = lt("listed", "plugin-on")
+    # "Avoided" means tokens a listing CANDIDATE is not spending: active skills
+    # hidden by skillOverrides, and plugin skills switched off or left unset.
+    # The vault is excluded on purpose -- it is not a candidate at any setting,
+    # so folding it in would inflate the saving with tokens no configuration
+    # change could ever have spent. Its hypothetical is reported on its own.
+    AVOIDABLE = ("hidden", "plugin-off", "plugin-unset")
+    avoided = lt(*AVOIDABLE)
     rc = config.roots()
     budget_tok = round(rc.get("listing_budget_chars", 24000) / rc["chars_per_token"])
     vault_bytes = sum(s["bb"] for s in by("vault"))
@@ -136,15 +162,24 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "plugin_off": reach.get("plugin-off", 0),
         "plugin_unset": reach.get("plugin-unset", 0),
         # The session listing bills active-listed AND enabled-plugin skills alike.
-        "listing_tok": sum(s["lt"] for s in skills if s["r"] in ("listed", "plugin-on")),
-        "listing_tok_active": sum(s["lt"] for s in listed),
-        "listing_tok_plugin": sum(s["lt"] for s in skills if s["r"] == "plugin-on"),
+        "listing_tok": billed,
+        "listing_tok_active": lt("listed"),
+        "listing_tok_plugin": lt("plugin-on"),
         "listing_entries": len([s for s in skills if s["r"] in ("listed", "plugin-on")]),
         "listing_budget_tok": budget_tok,
-        "listing_headroom_tok": budget_tok - sum(
-            s["lt"] for s in skills if s["r"] in ("listed", "plugin-on")),
-        "listing_over_budget": int(sum(
-            s["lt"] for s in skills if s["r"] in ("listed", "plugin-on")) > budget_tok),
+        "listing_headroom_tok": budget_tok - billed,
+        "listing_over_budget": int(billed > budget_tok),
+        # What hiding, disabling and vaulting keep out of every session prefix.
+        # Vault is always 0 by construction; it is emitted anyway so the panel
+        # never hardcodes even a constant.
+        "listing_tok_hidden": lt("hidden"),
+        "listing_tok_plugin_off": lt("plugin-off"),
+        "listing_tok_plugin_unset": lt("plugin-unset"),
+        "listing_tok_vault": lt("vault"),  # hypothetical: never actually billed
+        "listing_avoided_tok": avoided,
+        "listing_avoided_n": len([s for s in skills if s["r"] in AVOIDABLE]),
+        "listing_all_on_tok": billed + avoided,
+        "listing_avoided_ratio": round(avoided / billed, 1) if billed else 0,
         "load_tok_total": sum(s["ld"] for s in skills),
         "grade_a": grades.get("A", 0), "grade_b": grades.get("B", 0),
         "grade_c": grades.get("C", 0), "grade_d": grades.get("D", 0),
@@ -168,6 +203,8 @@ def snapshot(payload):
     d = os.path.join(config.RUNS_DIR, ts)
     os.makedirs(d, exist_ok=True)
     shutil.copy2(config.REPORT_JSON, os.path.join(d, "report-data.json"))
+    if os.path.exists(config.KEYS_JSON):
+        shutil.copy2(config.KEYS_JSON, os.path.join(d, "skill-keys.json"))
     return d
 
 
@@ -179,5 +216,15 @@ def runs():
 
 
 def load_run(ts):
-    with open(os.path.join(config.RUNS_DIR, ts, "report-data.json"), encoding="utf-8") as f:
-        return json.load(f)
+    d = os.path.join(config.RUNS_DIR, ts)
+    with open(os.path.join(d, "report-data.json"), encoding="utf-8") as f:
+        payload = json.load(f)
+    kp = os.path.join(d, "skill-keys.json")
+    if os.path.exists(kp):
+        with open(kp, encoding="utf-8") as f:
+            ks = json.load(f).get("keys", [])
+        # Only trust the sidecar if it still lines up; a hand-edited run should
+        # degrade to the fallback key rather than mispair every row after the edit.
+        if len(ks) == len(payload["skills"]):
+            payload["_keys"] = ks
+    return payload

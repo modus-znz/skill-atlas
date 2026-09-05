@@ -64,7 +64,20 @@ def cmd_diff(argv):
 
 
 def cmd_doctor(argv):
-    problems = 0
+    """Two verdicts, never conflated.
+
+    PROBLEMS are drift the pipeline cannot render around -- an unclassified
+    skill has no home in the tree, a stale taxonomy entry describes a skill
+    that is gone, a stale router index makes reachability a lie. These fail.
+
+    NOTICES are things a human should see but that are not defects. Stale
+    narrative is the standing example: a paragraph written on 2026-09-04 that
+    describes that day's census is CORRECT about the past, and the report
+    already badges it inline. Failing the build on it would turn every
+    historical passage into a permanent error and train everyone to ignore
+    the exit code.
+    """
+    problems, notices = 0, 0
     if not os.path.exists(config.SKILLS_JSON):
         print("doctor: no scan yet. Run `atlas.py scan`.")
         return 1
@@ -72,40 +85,44 @@ def cmd_doctor(argv):
     rows = [s for s in scan["skills"] if s.get("is_latest")]
     tax = Taxonomy()
 
+    print("PROBLEMS (fail the build)")
     un = tax.unclassified_names(rows)
-    print(f"unclassified active skills: {len(un)}")
+    print(f"  unclassified active skills: {len(un)}")
     for n in un:
-        print(f"  ? {n}")
+        print(f"    ? {n}")
     problems += len(un)
 
     stale = tax.stale_entries(rows)
-    print(f"taxonomy entries no longer on disk: {len(stale)}")
+    print(f"  taxonomy entries no longer on disk: {len(stale)}")
     for n in stale:
-        print(f"  x {n}")
+        print(f"    x {n}")
     problems += len(stale)
 
     if os.path.exists(config.ROUTER_JSON):
         fresh = os.path.getmtime(config.ROUTER_JSON) >= os.path.getmtime(config.SKILLS_JSON)
-        print(f"router index: {'fresh' if fresh else 'STALE — re-run `atlas.py reach`'}")
+        print(f"  router index: {'fresh' if fresh else 'STALE - re-run `atlas.py reach`'}")
         problems += 0 if fresh else 1
     else:
-        print("router index: MISSING — run `atlas.py reach`")
+        print("  router index: MISSING - run `atlas.py reach`")
         problems += 1
 
+    print("\nNOTICES (informational; do not fail the build)")
     if os.path.exists(config.REPORT_JSON):
         from atlas import content as content_mod
         metrics = json.load(open(config.REPORT_JSON, encoding="utf-8"))["metrics"]
-        n_stale = 0
         for cid, frag in content_mod.load_all().items():
             broken = content_mod.check_assertions(frag["fm"], metrics)
             if broken:
-                n_stale += 1
-                print(f"stale narrative: {frag['file']}")
+                notices += 1
+                print(f"  stale narrative: {frag['file']}")
                 for k, w, n in broken:
-                    print(f"  ! {k}: written as {w}, now {n}")
-        print(f"content fragments with stale assertions: {n_stale}")
+                    print(f"    ! {k}: written as {w}, now {n}")
+        print(f"  content fragments with stale assertions: {notices}"
+              f"{' (each renders a badge in the report)' if notices else ''}")
+    else:
+        print("  no report built yet; narrative not checked")
 
-    print(f"\ndoctor: {problems} problem(s)")
+    print(f"\ndoctor: {problems} problem(s), {notices} notice(s)")
     return 1 if problems else 0
 
 
