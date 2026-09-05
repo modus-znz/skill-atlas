@@ -60,10 +60,14 @@ def report(a_ts=None, b_ts=None, limit=20):
             print(f"  {label:8s} {r['s']:7s} {r['n']}")
         if len(rows) > limit:
             print(f"  {label:8s} … and {len(rows) - limit} more")
-    for k, x, y in d["regraded"][:limit]:
-        print(f"  grade    {bi[k]['n']}: {x} -> {y}")
-    for k, x, y in d["rereach"][:limit]:
-        print(f"  reach    {bi[k]['n']}: {x} -> {y}")
+    # `added`/`removed` above announce their own truncation; these two did not,
+    # so a 34-row regrade printed 20 lines under a header saying 34 and the
+    # missing 14 looked like they had not moved. Same tail, same promise.
+    for label, rows in (("grade", d["regraded"]), ("reach", d["rereach"])):
+        for k, x, y in rows[:limit]:
+            print(f"  {label:8s} {bi[k]['n']}: {x} -> {y}")
+        if len(rows) > limit:
+            print(f"  {label:8s} … and {len(rows) - limit} more")
     if d["metrics"]:
         print("  metrics:")
         for k, (x, y) in d["metrics"].items():

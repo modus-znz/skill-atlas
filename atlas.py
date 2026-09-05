@@ -18,9 +18,9 @@ import re
 from atlas import config, dataset, diffs, render as render_mod, scan as scan_mod
 from atlas.taxonomy import Taxonomy
 
-# A family smaller than this can be legitimately uniform by chance;
-# above it, a zero spread is the rubric failing to discriminate.
-FLAT_FAMILY_MIN = 10
+# One definition of "large enough that uniformity is a defect", shared with the
+# `flat_family_*` metrics so doctor and the report can never disagree.
+FLAT_FAMILY_MIN = dataset.FLAT_FAMILY_MIN
 
 
 def cmd_scan(argv):

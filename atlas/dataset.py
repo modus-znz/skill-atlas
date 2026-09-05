@@ -3,7 +3,7 @@
 Emits data/report-data.json and snapshots it into data/runs/<timestamp>/ so
 `atlas diff` can explain what moved between any two runs.
 """
-import json, os, shutil, time
+import collections, json, os, shutil, time
 
 from . import config
 from .reach import LABELS
@@ -136,6 +136,13 @@ def build(strict=True):
     return payload
 
 
+# A family smaller than this can be legitimately uniform by chance; above it, a
+# zero spread means the rubric has stopped discriminating inside that family.
+# Lives here so `atlas.py doctor` and the metrics that content asserts on cannot
+# disagree about where the line sits.
+FLAT_FAMILY_MIN = 10
+
+
 def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     """Every number the narrative is allowed to quote, computed in exactly one place."""
     by = lambda src: [s for s in skills if s["s"] == src]
@@ -186,6 +193,14 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     budget_tok = round(rc.get("listing_budget_chars", 24000) / rc["chars_per_token"])
     vault_bytes = sum(s["bb"] for s in by("vault"))
     plugin_bytes = sum(s["bb"] for s in by("plugin"))
+    _fam = collections.defaultdict(list)
+    for _s in skills:
+        if _s["s"] == "active":
+            _fam[_s["p"][1] if len(_s["p"]) > 1 else "?"].append(_s["sc"])
+    _flatf = [(len(v), v[0]) for v in _fam.values()
+              if len(v) >= FLAT_FAMILY_MIN and max(v) == min(v)]
+    _flat = max(_flatf) if _flatf else (0, 0)
+
     return {
         "generated": scan["generated"],
         "files_scanned": len(scan["skills"]),
@@ -266,6 +281,12 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "stale_taxonomy": len(tax.stale_entries(rows)),
         "vault_mb": round(vault_bytes / 1e6),
         "plugin_mb": round(plugin_bytes / 1e6),
+        # The largest active family whose members all score identically -- the
+        # rubric's own blind spot, surfaced as a number so the prose describing
+        # it in content/families.html carries an assertion and cannot drift
+        # silently when a 63rd aesthetic skill lands. 0 = no such family.
+        "flat_family_n": _flat[0],
+        "flat_family_score": _flat[1],
         "collections": len(scan["provenance"]),
     }
 

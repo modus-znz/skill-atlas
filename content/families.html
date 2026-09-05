@@ -1,7 +1,7 @@
 ---
 id: families
 asserted_on: 2026-09-06
-assert: {active: 148, listed: 47}
+assert: {active: 148, listed: 47, flat_family_n: 62, flat_family_score: 81}
 ---
 <div class="sec-head"><h2>Family density</h2><p>Whether a small category is a gap worth filling or a domain that is simply finished.</p></div>
   <div class="stack">
@@ -34,7 +34,7 @@ assert: {active: 148, listed: 47}
     <div>
       <h3 style="margin-bottom:10px">Five listed skills carried their whole manual on every invocation</h3>
       <p style="max-width:78ch">The audit's other correction ran the opposite way. <code>body</code> is a bell curve, not a floor — <code>thin &lt;400 = 4</code>, <code>good = 15</code>, <code>long = 10</code>, <code>bloated &gt;25,000 = 5</code> — so a low body score is ambiguous between too short and too long, and these five were far too <i>long</i>: single-file SKILL.md documents of 27,000&ndash;40,000 characters, all of them <code>listed</code>, all scoring B78 on the identical fingerprint <code>depth 3 + body 5</code>.</p>
-      <p style="max-width:78ch"><span class="pill p-ok">Fixed 2026-09-06</span> All five were split on their existing <code>##</code> boundaries into a lean SKILL.md plus a <code>references/</code> bundle — the standard progressive-disclosure pattern from the Agent Skills spec. Every source section was asserted to land somewhere exactly once, so nothing was dropped to buy a score.</p>
+      <p style="max-width:78ch"><span class="pill p-ok">Fixed 2026-09-06</span> All five were split on their existing <code>##</code> boundaries into a lean SKILL.md plus a <code>references/</code> bundle — the standard progressive-disclosure pattern from the Agent Skills spec. The splitter asserts that every source <code>##</code> section lands somewhere exactly once, so the mechanical part is guaranteed lossless. Two hand-edits sit outside that assertion, both on <code>imagegen-frontend-mobile</code>: its preamble repeated the anti-AI-tells list that §21 already owns, so the duplicate was replaced by a pointer naming §21 <em>and</em> the eight positive rules that carry the rest of it. One canonical list, checked by hand against the backup — not a trim bought for the score.</p>
       <div class="tw"><table>
         <thead><tr><th>Skill</th><th class="n">SKILL.md before</th><th class="n">after</th><th class="n">Load tok before</th><th class="n">after</th><th class="n">Grade</th></tr></thead>
         <tbody>
