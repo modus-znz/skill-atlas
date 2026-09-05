@@ -48,12 +48,12 @@ assert: {unclassified: 0, phantom_shadows: 0, vault: 693, active: 149}
       <div class="tw"><table>
         <thead><tr><th>Scope</th><th class="n">Skills</th><th class="n">Avg score</th><th class="n">Listing cost</th><th>How the model reaches it</th></tr></thead>
         <tbody>
-          <tr><td><b>Active — listed</b></td><td class="n"><s style="opacity:.45">45</s> 46</td><td class="n">85.9</td><td class="n"><s style="opacity:.45">4,210</s> 4,312</td><td>Automatic selection from the session listing</td></tr>
-          <tr><td><b>Active — hidden</b></td><td class="n">104</td><td class="n">80.5</td><td class="n">0</td><td><code>/name</code> by the user, or <code>skill_search</code></td></tr>
-          <tr><td><b>Vault</b></td><td class="n">693</td><td class="n">72.2</td><td class="n">0</td><td><code>skill_search</code> only — all 693 reachable since the 2026-09-04 id fix</td></tr>
-          <tr><td><b>Plugin — enabled</b></td><td class="n">40</td><td class="n">86.4</td><td class="n">3,272</td><td>Always listed; <code>skillOverrides</code> does not apply</td></tr>
-          <tr><td><b>Plugin — disabled</b></td><td class="n">55</td><td class="n">68.2</td><td class="n">0</td><td>Unreachable until re-enabled in settings</td></tr>
-          <tr><td><b>Plugin — unset</b></td><td class="n">14</td><td class="n">69.0</td><td class="n">0</td><td>figma — project scope only</td></tr>
+          <tr><td><b>Active — listed</b></td><td class="n">{{ metrics.listed }}</td><td class="n">{{ metrics.score_listed }}</td><td class="n">{{ metrics.listing_tok_active }}</td><td>Automatic selection from the session listing</td></tr>
+          <tr><td><b>Active — hidden</b></td><td class="n">{{ metrics.hidden }}</td><td class="n">{{ metrics.score_hidden }}</td><td class="n">0</td><td><code>/name</code> by the user, or <code>skill_search</code></td></tr>
+          <tr><td><b>Vault</b></td><td class="n">{{ metrics.vault }}</td><td class="n">{{ metrics.score_vault }}</td><td class="n">0</td><td><code>skill_search</code> only — every one addressable by id since the 2026-09-04 fix</td></tr>
+          <tr><td><b>Plugin — enabled</b></td><td class="n">{{ metrics.plugin_on }}</td><td class="n">{{ metrics.score_plugin_on }}</td><td class="n">{{ metrics.listing_tok_plugin }}</td><td>Always listed; <code>skillOverrides</code> does not apply</td></tr>
+          <tr><td><b>Plugin — disabled</b></td><td class="n">{{ metrics.plugin_off }}</td><td class="n">{{ metrics.score_plugin_off }}</td><td class="n">0</td><td>Unreachable until re-enabled in settings</td></tr>
+          <tr><td><b>Plugin — unset</b></td><td class="n">{{ metrics.plugin_unset }}</td><td class="n">{{ metrics.score_plugin_unset }}</td><td class="n">0</td><td>figma — project scope only</td></tr>
         </tbody>
       </table></div>
     </div>

@@ -136,6 +136,17 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     def lt(*states):
         return sum(s["lt"] for s in skills if s["r"] in states)
 
+    def ld(*states):
+        return sum(s["ld"] for s in skills if s["r"] in states)
+
+    # Mean quality score per reachability scope. The overview's scope table is a
+    # present-tense claim about the library as it stands, so every one of its
+    # cells is measured -- hand-typed cells there were the same defect as the
+    # cost table: a header saying "at a glance" over last month's numbers.
+    def avg(*states):
+        xs = [s["sc"] for s in skills if s["r"] in states]
+        return round(sum(xs) / len(xs), 1) if xs else 0
+
     billed = lt("listed", "plugin-on")
     # "Avoided" means tokens a listing CANDIDATE is not spending: active skills
     # hidden by skillOverrides, and plugin skills switched off or left unset.
@@ -181,6 +192,20 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "listing_all_on_tok": billed + avoided,
         "listing_avoided_ratio": round(avoided / billed, 1) if billed else 0,
         "load_tok_total": sum(s["ld"] for s in skills),
+        "load_tok_vault": ld("vault"),
+        # D-graded skills that are actually billed in the listing. The health
+        # panel claims the worst skills cost nothing because they sit in the
+        # vault; that only stays true while this reads 0, so it is measured
+        # rather than asserted in prose.
+        "grade_d_billed": len([s for s in skills
+                               if s["g"] == "D" and s["r"] in ("listed", "plugin-on")]),
+        "active_max_age_days": max([s["ag"] for s in skills if s["s"] == "active"], default=0),
+        "score_listed": avg("listed"),
+        "score_hidden": avg("hidden"),
+        "score_vault": avg("vault"),
+        "score_plugin_on": avg("plugin-on"),
+        "score_plugin_off": avg("plugin-off"),
+        "score_plugin_unset": avg("plugin-unset"),
         "grade_a": grades.get("A", 0), "grade_b": grades.get("B", 0),
         "grade_c": grades.get("C", 0), "grade_d": grades.get("D", 0),
         "grade_e": grades.get("E", 0),

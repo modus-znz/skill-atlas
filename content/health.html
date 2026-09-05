@@ -56,7 +56,7 @@ assert: {phantom_shadows: 0, stale_taxonomy: 0, vault: 693, total: 951}
 
     <div class="find sev-ok">
       <div class="fh"><h3>Structural health is genuinely good</h3><span class="pill p-ok">Healthy</span></div>
-      <p>Zero active skills are missing a <code>description</code>. Zero active directories lack a <code>SKILL.md</code>. Nothing in the active library is older than 300 days and the median is well inside a year. 108 skills grade A and 702 grade B; only 42 fall to D, and all 42 sit in the vault where they cost nothing. The frontmatter discipline across 951 files is better than the size of the collection would predict.</p>
+      <p>Zero active skills are missing a <code>description</code>. Zero active directories lack a <code>SKILL.md</code>. The oldest thing in the active library is {{ metrics.active_max_age_days }} days old. {{ metrics.grade_a }} skills grade A and {{ metrics.grade_b }} grade B; only {{ metrics.grade_d }} fall to D, and {{ metrics.grade_d_billed }} of those are billed in the listing — the rest sit in the vault where they cost nothing. The frontmatter discipline across {{ metrics.files_scanned }} files is better than the size of the collection would predict.</p>
     </div>
 
     <div style="margin-top:8px">

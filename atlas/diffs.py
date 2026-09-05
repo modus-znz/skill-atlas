@@ -2,12 +2,17 @@
 from . import dataset
 
 
-def _index(payload):
-    """Map identity -> row. Prefers the realpath sidecar; falls back to
-    name+source+treepath for runs recorded before the sidecar existed. The
-    fallback is lossy (three vault rows collide) and is only there so an old
-    run still diffs at all -- it is not the intended key."""
-    ks = payload.get("_keys")
+def _index(payload, sidecar):
+    """Map identity -> row. With `sidecar` true the key is the skill's realpath
+    (exact); otherwise name+source+treepath, which is lossy -- three vault rows
+    collide -- and exists only so a run recorded before the sidecar still diffs.
+
+    The scheme is chosen ONCE PER PAIR by _index_pair, never per payload: the
+    two keyspaces are disjoint, so mixing them makes every key mismatch and the
+    diff reports "everything added, everything removed" as though it were a real
+    finding. Degrading both sides together loses three rows; degrading one side
+    loses the entire comparison."""
+    ks = payload.get("_keys") if sidecar else None
     out = {}
     for i, row in enumerate(payload["skills"]):
         k = ks[i] if ks else row["n"] + "|" + row["s"] + "|" + "/".join(row["p"])
@@ -15,9 +20,15 @@ def _index(payload):
     return out
 
 
+def _index_pair(a, b):
+    """Index both sides in one keyspace -- the exact one only if BOTH carry it."""
+    sidecar = bool(a.get("_keys")) and bool(b.get("_keys"))
+    return _index(a, sidecar), _index(b, sidecar)
+
+
 def diff(a_ts, b_ts):
     a, b = dataset.load_run(a_ts), dataset.load_run(b_ts)
-    ai, bi = _index(a), _index(b)
+    ai, bi = _index_pair(a, b)
     added = sorted(set(bi) - set(ai))
     removed = sorted(set(ai) - set(bi))
     regraded = [(k, ai[k]["g"], bi[k]["g"]) for k in sorted(set(ai) & set(bi))
@@ -39,7 +50,7 @@ def report(a_ts=None, b_ts=None, limit=20):
     a_ts = a_ts or rs[-2]
     b_ts = b_ts or rs[-1]
     d = diff(a_ts, b_ts)
-    ai, bi = _index(dataset.load_run(a_ts)), _index(dataset.load_run(b_ts))
+    ai, bi = _index_pair(dataset.load_run(a_ts), dataset.load_run(b_ts))
     print(f"diff {d['from']} -> {d['to']}")
     print(f"  added {len(d['added'])}  removed {len(d['removed'])}  "
           f"regraded {len(d['regraded'])}  reachability changed {len(d['rereach'])}")

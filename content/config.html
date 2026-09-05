@@ -54,7 +54,7 @@ assert: {listed: 46, hidden: 101}
       <h3 style="margin-bottom:10px">Reachability mechanics worth remembering</h3>
       <ul class="list">
         <li><b><code>skillOverrides</code> does not apply to plugin skills.</b> Hiding is only available for <code>~/.claude/skills/</code>. A plugin is all-or-nothing: enabled means all its skills are listed, at full description cost.</li>
-        <li><b>Hidden is not disabled.</b> The 100 overridden skills work exactly as before — they are absent from the model's automatic selection, and reachable by <code>/name</code> or <code>skill_search</code>.</li>
+        <li><b>Hidden is not disabled.</b> The {{ metrics.hidden }} overridden skills work exactly as before — they are absent from the model's automatic selection, and reachable by <code>/name</code> or <code>skill_search</code>.</li>
         <li><b>The skill-router MCP excludes the plugin cache by design</b> — plugin skills are never hidden, so indexing them would only duplicate the listing.</li>
         <li><b>Project settings can re-enable a family.</b> <code>odoo-*</code> is already re-listed inside <code>/opt/odoo19-custom-addons/</code> and nowhere else. This is the right pattern for figma and expo too, rather than a global switch.</li>
       </ul>

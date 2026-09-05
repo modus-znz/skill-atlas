@@ -106,6 +106,22 @@ def cmd_doctor(argv):
         print("  router index: MISSING - run `atlas.py reach`")
         problems += 1
 
+    # The identity sidecar is a derived file with a consumer (diffs) and no
+    # loud failure mode: absent, the diff silently falls back to the lossy
+    # name+source+path key. That is the same shape as the router index that sat
+    # stale forever, so it gets the same existence-and-alignment gate.
+    if os.path.exists(config.KEYS_JSON) and os.path.exists(config.REPORT_JSON):
+        nk = len(json.load(open(config.KEYS_JSON, encoding="utf-8"))["keys"])
+        ns = len(json.load(open(config.REPORT_JSON, encoding="utf-8"))["skills"])
+        ok = nk == ns
+        print(f"  identity sidecar: {nk} keys vs {ns} skills - "
+              f"{'aligned' if ok else 'MISALIGNED - re-run `atlas.py build`'}")
+        problems += 0 if ok else 1
+    elif os.path.exists(config.REPORT_JSON):
+        print("  identity sidecar: MISSING - diffs fall back to the lossy key; "
+              "re-run `atlas.py build`")
+        problems += 1
+
     print("\nNOTICES (informational; do not fail the build)")
     if os.path.exists(config.REPORT_JSON):
         from atlas import content as content_mod
