@@ -1,0 +1,60 @@
+---
+id: overview
+title: Overview
+asserted_on: 2026-09-04
+assert: {unclassified: 0, phantom_shadows: 0, vault: 693, active: 149}
+---
+<div class="stack">
+    <p class="lede">The working assumption going in was “200+ skills”. The real number is <b>{{ metrics.total }} distinct skills</b> across three roots, from <b>{{ metrics.files_scanned }}</b> <code>SKILL.md</code> files on disk — the {{ metrics.stale_copies }}-file gap is duplicate cached plugin versions, not extra capability. Everything below is computed from that scan; nothing is carried over from prose.</p>
+
+    <!--KPIS-->
+
+    <div>
+      <div class="sec-head"><h2>What the scan changed</h2><p>Five claims in the current documentation that the measurement contradicts.</p></div>
+      <div class="stack">
+        <div class="find sev-md">
+          <div class="fh"><h3>claude-router undercounts the plugin cache</h3><span class="pill p-warn">Doc drift</span></div>
+          <p>The router records hyperframes at “~19 skills” and expo at “~21”. Two sizeable plugins — <code>figma</code> (14) and <code>ui-ux-pro-max</code> (7) — carry no count at all. The counts were taken from raw directory listings at some point and the cache has since grown extra version folders underneath them.</p>
+          <p><span class="pill p-ok">Fixed 2026-09-04</span> Corrected in <code>claude-router</code> from the <b>live</b> install paths in <code>installed_plugins.json</code>, not from the cache tree: <b>24 plugins, 93 plugin skills</b> — expo <b>24</b>, hyperframes <b>20</b>. <b>Note the census itself over-counted here:</b> collapsing by <code>(plugin, skill)</code> across <i>all</i> cached versions unioned skills that the current release had already dropped, which is how hyperframes read 26. Post-prune only the live version survives, so 20 is the number a session can actually reach. Two further findings fell out: <code>commit-commands</code> and <code>code-review</code> are <b>commands-only plugins with zero skills</b>, making the <code>commit-commands:*</code> override keys definitively inert rather than merely suspected so; and the hidden-skill count was itself stale — <b>105</b>, not 101, now corrected in both <code>claude-router</code> and <code>CLAUDE.md</code>.</p>
+          <div class="fix"><b>Fix:</b> regenerate the plugin table from a dedupe-aware scan rather than a <code>find | wc -l</code>, and note the version each count refers to.</div>
+        </div>
+        <div class="find sev-hi">
+          <div class="fh"><h3>1.5 GB of plugin cache, and most of it is superseded</h3><span class="pill p-bad">Disk</span></div>
+          <p><code>claude-plugins-official</code> holds <b>1.1 GB</b> and <code>video-prep</code> another <b>441 MB</b>. expo keeps three versions side by side (1.11.0 / 1.12.0 / 1.12.3), hyperframes three (0.8.3 / 0.8.4 / 0.8.6), chrome-devtools-mcp two. <code>frontend-design</code> and <code>skill-creator</code> are each cached under <b>seven</b> hash-named directories.</p>
+          <p><span class="pill p-ok">Fixed 2026-09-04</span> <b>1,522 &rarr; 755 MB; 767 MB reclaimed</b>, 47 superseded version directories across 10 plugins. <b>The “worse” above was wrong</b> — those seven hash dirs are ~1 MB each, pure trivia. The weight was in three directories: <code>chrome-devtools-mcp/1.7.0</code> at 265 MB and two stale <code>hyperframes</code> builds at 363 MB, all three fat because they vendor a browser or a <code>node_modules</code> tree. The keeper for every plugin was resolved from <code>installed_plugins.json</code> and asserted to exist and be non-empty <i>before</i> a single delete ran; all 24 plugins were re-checked afterwards and still resolve.</p>
+          <div class="fix"><b>Fix:</b> keep the newest version per plugin and delete the rest. Nothing references the old folders; the loader resolves the current version from the marketplace manifest.</div>
+        </div>
+        <div class="find sev-ok">
+          <div class="fh"><h3>Hiding 104 skills is working, and it is worth 5,603 tokens a session</h3><span class="pill p-ok">Confirmed</span></div>
+          <p><span class="pill p-ok">Updated 2026-09-04</span> The listed active skills are now <b>46</b> costing <b>4,312 tokens</b> of name-plus-description in every session prefix &mdash; <code>capacitor-mobile-build</code> (row 9) was deliberately left <i>listed</i> so mobile build work selects it automatically, at ~102 tokens; <code>odoo-deploy</code> (row 7) was registered <i>hidden</i> instead, so it costs nothing outside the addons repo. The 105 hidden ones would add <b>5,603</b> more — the single largest deliberate saving on the machine, and it more than doubles the listing if reversed. The <code>skillOverrides</code> strategy is sound and should be extended, not relaxed.</p>
+        </div>
+        <div class="find sev-md">
+          <div class="fh"><h3>77 vault skills are installed and structurally unreachable</h3><span class="pill p-bad">Reachability</span></div>
+          <p>Read from the router's own index, not inferred. <code>lib.mjs</code> keyed every skill by <code>slugify(name)</code> — a bare name, no collection prefix — and <code>buildIndex</code> kept <b>one winner per id</b> under a precedence of active &gt; plugin &gt; vault. Because <code>skill_search</code> iterated that same winners-only map, a shadowed skill was absent from <i>search results as well as</i> <code>skill_load</code>: unreachable at all, by any spelling. Index at census time: <b>765 ids</b> — 149 active and <b>616 of 693 vault</b> skills. <code>financial-services</code> was worst hit, with only <b>17 of its 57</b> reachable; <code>knowledge-work</code> lost 23. Ties between two vault copies broke on filesystem enumeration order, so <i>which</i> copy survived was not even a policy decision.</p>
+          <p><span class="pill p-ok">Fixed 2026-09-04</span> Ids are now qualified as <code>collection/name</code>, claiming the shortest unused form and escalating to deeper path prefixes on collision; active skills keep the bare name. Files are sorted per root before ids are assigned, so enumeration order no longer decides anything. Every one of the 765 bare names still resolves — to the highest-precedence copy, which now also reports its siblings as <code>variants</code>, so choosing a specific copy is deliberate rather than silent. <b>Index: 842 ids, 149 active + 693 vault, nothing dropped.</b> <code>financial-services</code> serves all 57.</p>
+          <div class="fix"><b>Fix:</b> namespace vault ids as <code>collection/name</code> and let <code>skill_search</code> emit every match with its prefix. The winner set is already tracked — each item carries a <code>shadowedBy</code> array that is populated and then never surfaced through the MCP.</div>
+        </div>
+        <div class="find sev-hi">
+          <div class="fh"><h3>Coverage is inverted against the actual project mix</h3><span class="pill p-bad">Coverage</span></div>
+          <p>Measured against the 27 project roots: <b>377 skills</b> in corporate, knowledge-work, financial-services and openaccountant serve essentially <b>one</b> project (bizflow). Meanwhile Odoo — the largest codebase on the machine — has <b>7</b>; Capacitor and Android native have <b>none</b>; the three infrastructure projects (k8s, MikroTik, router) have <b>none</b>. The library is broad where the work is thin and thin where the work is deep.</p>
+          <p><span class="pill p-ok">Acted on 2026-09-04</span> Two skills written, both sourced from what is on disk rather than invented. <code>odoo-deploy</code> — the family had seven skills for <i>talking to</i> Odoo and none for <i>applying a change</i>: upgrade-vs-restart by change type, both instances (8069/<code>odoo</code> and 7079/<code>laicidev</code>), the <code>sudo -S</code>-plus-stdin-redirect trap, and the failure patterns. <code>capacitor-mobile-build</code> — build/sync, emulator smoke test, the <code>10.0.2.2</code> host mapping, logcat channels and the signed release, drawn from the real <code>capacitor.config.ts</code>, npm scripts and <code>build.gradle</code>. Odoo <b>7 &rarr; 8</b>, Capacitor <b>0 &rarr; 1</b>. Infrastructure still has none — deliberately out of scope.</p>
+          <div class="fix"><b>Fix:</b> the highest-value skills to <i>write</i> are Odoo-side (ORM patterns, QWeb views, migration scripts) and Capacitor build/release — not more of what is already installed.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-head"><h2>Scope at a glance</h2><p>Reachability is the axis that matters — a skill the model cannot select is not capability. Read the <i>Avg score</i> column with the rubric in mind: reachability is 25 of its 100 points, so part of the spread between these rows is the definition of the row itself, not a quality gap.</p></div>
+      <div class="tw"><table>
+        <thead><tr><th>Scope</th><th class="n">Skills</th><th class="n">Avg score</th><th class="n">Listing cost</th><th>How the model reaches it</th></tr></thead>
+        <tbody>
+          <tr><td><b>Active — listed</b></td><td class="n"><s style="opacity:.45">45</s> 46</td><td class="n">85.9</td><td class="n"><s style="opacity:.45">4,210</s> 4,312</td><td>Automatic selection from the session listing</td></tr>
+          <tr><td><b>Active — hidden</b></td><td class="n">104</td><td class="n">80.5</td><td class="n">0</td><td><code>/name</code> by the user, or <code>skill_search</code></td></tr>
+          <tr><td><b>Vault</b></td><td class="n">693</td><td class="n">72.2</td><td class="n">0</td><td><code>skill_search</code> only — all 693 reachable since the 2026-09-04 id fix</td></tr>
+          <tr><td><b>Plugin — enabled</b></td><td class="n">40</td><td class="n">86.4</td><td class="n">3,272</td><td>Always listed; <code>skillOverrides</code> does not apply</td></tr>
+          <tr><td><b>Plugin — disabled</b></td><td class="n">55</td><td class="n">68.2</td><td class="n">0</td><td>Unreachable until re-enabled in settings</td></tr>
+          <tr><td><b>Plugin — unset</b></td><td class="n">14</td><td class="n">69.0</td><td class="n">0</td><td>figma — project scope only</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div

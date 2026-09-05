@@ -1,0 +1,38 @@
+{
+  "home": "~",
+  "settings": "~/.claude/settings.json",
+  "router_lib": "~/.claude/mcp-servers/skill-router/lib.mjs",
+  "roots": [
+    {
+      "source": "active",
+      "path": "~/.claude/skills",
+      "follow_symlinks": true
+    },
+    {
+      "source": "vault",
+      "path": "~/.claude/skill-vault",
+      "follow_symlinks": false
+    },
+    {
+      "source": "plugin",
+      "path": "~/.claude/plugins/cache",
+      "follow_symlinks": false
+    }
+  ],
+  "skip_dirs": [
+    ".git",
+    "node_modules",
+    "__pycache__"
+  ],
+  "depth_subdirs": [
+    "references",
+    "reference",
+    "scripts",
+    "assets",
+    "examples",
+    "templates"
+  ],
+  "chars_per_token": 3.6,
+  "listing_budget_chars": 24000,
+  "_budget_note": "skillListingBudgetFraction 0.04 of a 600k window = 24,000 chars."
+}

@@ -1,0 +1,159 @@
+{
+  "_comment": "Curated family classification for the active library. Anything not matched lands in the explicit 'Unclassified' bucket and is reported by `atlas doctor` -- it is NEVER silently filed under a real family.",
+  "unclassified": "Unclassified",
+  "prefix_rules": [
+    {
+      "pattern": "^odoo-",
+      "family": "Odoo"
+    },
+    {
+      "pattern": "^remotion",
+      "family": "Remotion / video"
+    },
+    {
+      "pattern": "^stitch",
+      "family": "Stitch design-gen"
+    }
+  ],
+  "families": {
+    "Process & meta": [
+      "karpathy-guidelines",
+      "token-lean",
+      "claude-router",
+      "graphify",
+      "agent-skills-spec",
+      "book-to-skill",
+      "design-skill-registry",
+      "full-output-enforcement",
+      "enhance-prompt",
+      "philosophical-brain",
+      "homelab-catalog",
+      "design-md"
+    ],
+    "Frontend & UI craft": [
+      "design-taste-frontend",
+      "design-taste-frontend-v1",
+      "high-end-visual-design",
+      "apple-design",
+      "minimalist-ui",
+      "industrial-brutalist-ui",
+      "shadcn",
+      "shadcn-ui",
+      "react-vite-dashboard",
+      "pick-ui-library",
+      "image-to-code",
+      "imagegen-frontend-web",
+      "imagegen-frontend-mobile",
+      "redesign-existing-projects",
+      "mobile-screen",
+      "taste-design",
+      "gpt-taste",
+      "brandkit",
+      "prototype"
+    ],
+    "Motion & animation": [
+      "animate",
+      "animation-vocabulary",
+      "find-animation-opportunities",
+      "improve-animations",
+      "review-animations",
+      "emil-design-eng"
+    ],
+    "Video production": [
+      "video-editing",
+      "ffmpeg-usage",
+      "kinocut",
+      "kinocut-repurpose"
+    ],
+    "Writing & documents": [
+      "no-ai-slop",
+      "humanizer",
+      "humanize-dev-artifacts",
+      "storytelling",
+      "lingo",
+      "odt"
+    ],
+    "Editor & model tooling": [
+      "antigravity-rules",
+      "antigravity-prompt",
+      "kimi",
+      "agentic"
+    ],
+    "Design aesthetics": [
+      "ant",
+      "artistic",
+      "basic",
+      "bento",
+      "bold",
+      "brutalism",
+      "cafe",
+      "claude",
+      "claymorphism",
+      "clean",
+      "codex",
+      "colorful",
+      "contemporary",
+      "corporate",
+      "cosmic",
+      "creative",
+      "dithered",
+      "doodle",
+      "dramatic",
+      "editorial",
+      "enterprise",
+      "expressive",
+      "fantasy",
+      "fiction",
+      "flat",
+      "friendly",
+      "futuristic",
+      "geometric",
+      "glassmorphism",
+      "gradient",
+      "immersive",
+      "impeccable",
+      "levels",
+      "material",
+      "matrix",
+      "minimal",
+      "modern",
+      "mono",
+      "neobrutalism",
+      "neon",
+      "neumorphism",
+      "pacman",
+      "paper",
+      "perspective",
+      "power",
+      "premium",
+      "professional",
+      "pulse",
+      "refined",
+      "retro",
+      "riso",
+      "roku",
+      "sega",
+      "sketch",
+      "skeumorphism",
+      "sleek",
+      "spacious",
+      "square",
+      "terracotta",
+      "tetris",
+      "vibrant",
+      "vintage"
+    ],
+    "Build & release": [
+      "capacitor-mobile-build"
+    ]
+  },
+  "_removed_2026_09_05": {
+    "Security & pentest": [
+      "penetration-testing-with-strix",
+      "managed-pentesting-with-strix",
+      "ci-security-scanning-with-strix",
+      "fix-security-vulnerabilities-with-strix"
+    ],
+    "_why": "The four *-with-strix skills were deleted from disk on 2026-09-05 (they required paid STRIX_LLM credentials this machine does not have). Kept here as a record so `atlas doctor` does not re-flag them as missing."
+  }
+}

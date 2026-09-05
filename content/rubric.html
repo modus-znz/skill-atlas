@@ -1,0 +1,52 @@
+---
+id: rubric
+asserted_on: 2026-09-04
+assert: {}
+---
+<div class="sec-head"><h2>Scoring rubric</h2><p>How every one of the 947 scores was computed.</p></div>
+  <div class="stack">
+    <p class="lede">No skill was scored by hand. A hand-assigned number across 947 rows would be unverifiable and inconsistent, so the score is a formula over measured properties — which means you can disagree with the weights and recompute, rather than having to take the number on trust. Six dimensions, 100 points.</p>
+    <div class="tw"><table>
+      <thead><tr><th class="n">Pts</th><th>Dimension</th><th>Why it counts</th><th>Bands</th></tr></thead>
+      <tbody>
+        <tr><td class="n">25</td><td><b>Reachability</b></td><td>A skill the model cannot select is not capability. This is the single strongest predictor of whether a skill ever fires.</td><td>Listed 25 · plugin-on 23 · hidden 16 · vault 12 · unset 10 · plugin-off 8</td></tr>
+        <tr><td class="n">25</td><td><b>Description quality</b></td><td><code>skill_search</code> ranks on the description, and for hidden and vault skills it is the <i>only</i> route in. Too short is unfindable; too long is a standing tax when listed.</td><td>0 chars → 4 · &lt;60 → 12 · 60–400 → 25 · 401–700 → 20 · &gt;700 → 12</td></tr>
+        <tr><td class="n">15</td><td><b>Bundle depth</b></td><td>A <code>references/</code>, <code>scripts/</code> or <code>assets/</code> directory is the difference between a skill and a note-to-self, and it is what makes progressive disclosure possible.</td><td>5 base + 5 per support dir, capped at 15 · single-file bundle → 3</td></tr>
+        <tr><td class="n">15</td><td><b>Body weight</b></td><td>A skill must be loadable without eating the window. Under 400 chars is a stub; over 25,000 is a liability at load time.</td><td>&lt;400 → 4 · 400–12k → 15 · 12k–25k → 10 · &gt;25k → 5</td></tr>
+        <tr><td class="n">10</td><td><b>Freshness</b></td><td>Newest file mtime in the bundle. A proxy, not proof — but a skill untouched for a year in a fast-moving toolchain is a different risk from one touched last week.</td><td>≤60 d → 10 · ≤150 → 7 · ≤300 → 4 · older → 2</td></tr>
+        <tr><td class="n">10</td><td><b>Hygiene</b></td><td>Duplicate cached copies and name collisions are real defects with real consequences — one costs disk and resolution ambiguity, the other costs reachability.</td><td>10 base · −1 per duplicate copy (max −5) · −3 if the name collides</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 style="margin-bottom:8px">Grade bands</h4>
+        <ul class="list">
+          <li><span class="pill gA">A</span> 82–100 — reachable, well-described, properly bundled. <b>108 skills</b>.</li>
+          <li><span class="pill gB">B</span> 70–81 — sound, with one weak dimension. <b>698 skills</b>.</li>
+          <li><span class="pill gC">C</span> 58–69 — a real defect worth fixing. <b>99 skills</b>.</li>
+          <li><span class="pill gD">D</span> 45–57 — two or more compounding defects. <b>42 skills</b>, all vaulted.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:8px">What the score deliberately does not measure</h4>
+        <ul class="list">
+          <li><b>Quality of the instructions.</b> Judged only by proxy — nothing here reads the prose and rates the advice.</li>
+          <li><b>Fit to this machine's work.</b> Handled separately in the density verdicts, which are hand-authored at the category level.</li>
+          <li><b>Actual usage.</b> No invocation telemetry is available, so a brilliant skill never once fired scores identically to one used daily.</li>
+        </ul>
+        <p style="font-size:13px;color:var(--ink-3);margin-top:10px">Treat a score as a triage signal — where to look first — not a verdict.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:8px">Method</h4>
+      <ul class="list">
+        <li>Walked three roots, parsing YAML frontmatter from every <code>SKILL.md</code>; symlinks not followed, <code>.git</code> and <code>node_modules</code> excluded. <b>1,088 files.</b></li>
+        <li>Collapsed the plugin cache to the newest version per <code>(plugin, skill)</code> — semver preferred, mtime as the tiebreak for hash-named directories. <b>141 duplicates removed → 947.</b></li>
+        <li>Reachability derived from <code>skillOverrides</code> and <code>enabledPlugins</code> in <code>~/.claude/settings.json</code>, not from documentation.</li>
+        <li>Token figures are estimates at <b>chars ÷ 3.6</b>. Good to roughly ±10% for English prose with code fences; treat them as comparative, not exact.</li>
+        <li>Upstream figures fetched live from the public repositories on the generation date.</li>
+      </ul>
+    </div>
+  </div

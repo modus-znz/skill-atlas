@@ -1,0 +1,65 @@
+---
+id: cost
+title: Context cost
+asserted_on: 2026-09-04
+assert: {listing_over_budget: 0, vault: 693}
+---
+<div class="sec-head"><h2>Token cost</h2><p>Two very different budgets, routinely conflated.</p></div>
+  <div class="stack">
+    <p class="lede">A <b>listing</b> cost is paid in the system prefix of every single request, whether or not the skill is used — it is only the name plus the description. A <b>load</b> cost is paid once, when the skill is actually invoked, and is the whole <code>SKILL.md</code> body. Estimates below use <b>chars ÷ 3.6</b>, the ratio measured across this corpus.</p>
+
+    <div>
+      <h3 style="margin-bottom:10px">Standing cost — billed every request</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Bucket</th><th class="n">Skills</th><th class="n">Tokens</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Active — listed</td><td class="n">{{ metrics.listed }}</td><td class="n">{{ metrics.listing_tok_active }}</td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td>Plugin — enabled</td><td class="n">{{ metrics.plugin_on }}</td><td class="n">{{ metrics.listing_tok_plugin }}</td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td><b>Total standing cost</b></td><td class="n"><b>85</b></td><td class="n"><b>7,482</b></td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td>Active — hidden</td><td class="n">100</td><td class="n">4,923</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — disabled</td><td class="n">55</td><td class="n">8,060</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — unset (figma)</td><td class="n">14</td><td class="n">2,161</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Vault</td><td class="n">693</td><td class="n">0</td><td><span class="pill p-ok">Never listed</span></td></tr>
+          <tr><td><b>Total avoided</b></td><td class="n"><b>862</b></td><td class="n"><b>15,144</b></td><td><span class="pill p-ok">Saved</span></td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Read that bottom line carefully: the visibility discipline on this machine is saving <b>roughly twice what it spends</b>. Turning everything on would take the skill prefix from 7,482 to 22,626 tokens on every request — before a single skill is used.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Ten heaviest loads</h3>
+      <p class="mut" style="margin:0 0 10px;font-size:12.5px;max-width:78ch">Ordering is the <b>census</b> ranking, deliberately left as it was. <code>design-taste-frontend</code> and <code>claude-router</code> were split on 2026-09-04 and no longer belong in a top-ten by load at all — they are kept in position so the delta is visible rather than silently disappearing off the table.</p>
+      <div class="tw"><table>
+        <thead><tr><th class="n">Load tok</th><th>Skill</th><th>Scope</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="n"><s style="opacity:.45">24,202</s> <b>5,512</b></td><td><code>design-taste-frontend</code></td><td>active</td><td><span class="pill p-ok">Split 2026-09-04</span> 8 reference files</td></tr>
+          <tr><td class="n">18,012</td><td><code>talking-head-recut</code></td><td>plugin</td><td>video-prep; only loads when used</td></tr>
+          <tr><td class="n"><s style="opacity:.45">14,224</s> <b>7,514</b></td><td><code>claude-router</code></td><td>active</td><td><span class="pill p-bad">Loaded most often</span> · <span class="pill p-ok">Split 2026-09-04</span> 5 reference files</td></tr>
+          <tr><td class="n">12,364</td><td><code>dcf-model</code></td><td>vault</td><td>Was the only reachable copy; the three heavier ones (13,752) are addressable by <code>collection/name</code> since 2026-09-04</td></tr>
+          <tr><td class="n">11,449</td><td><code>graphify</code></td><td>active</td><td>Enforced by a managed hook</td></tr>
+          <tr><td class="n">11,190</td><td><code>imagegen-frontend-mobile</code></td><td>active</td><td>Listed</td></tr>
+          <tr><td class="n">10,366</td><td><code>earnings-preview-single</code></td><td>vault</td><td>Rarely reached</td></tr>
+          <tr><td class="n">10,217</td><td><code>imagegen-frontend-web</code></td><td>active</td><td>Listed</td></tr>
+          <tr><td class="n">10,100</td><td><code>image-to-code</code></td><td>active</td><td>Listed</td></tr>
+          <tr><td class="n">9,466</td><td><code>figma-use</code></td><td>plugin</td><td>figma — project scope only</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Vault load weight by collection</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Collection</th><th class="n">Skills</th><th class="n">Reachable</th><th class="n">Total load tok</th><th class="n">Avg per skill</th><th class="n">Bundle</th><th class="n">Avg score</th></tr></thead>
+        <tbody>
+          <tr><td>ecc</td><td class="n">286</td><td class="n"><span class="pill p-ok">283 · 99%</span></td><td class="n">712,012</td><td class="n">2,490</td><td class="n">3.47 MB</td><td class="n">73.7</td></tr>
+          <tr><td>corporate</td><td class="n">166</td><td class="n"><span class="pill p-warn">156 · 94%</span></td><td class="n">446,603</td><td class="n">2,690</td><td class="n">2.32 MB</td><td class="n">69.1</td></tr>
+          <tr><td>knowledge-work</td><td class="n">110</td><td class="n"><span class="pill p-warn">87 · 79%</span></td><td class="n">241,191</td><td class="n">2,193</td><td class="n">1.10 MB</td><td class="n">73.6</td></tr>
+          <tr><td>financial-services</td><td class="n">57</td><td class="n"><span class="pill p-bad">17 · 30%</span></td><td class="n">159,229</td><td class="n">2,794</td><td class="n">0.77 MB</td><td class="n">70.4</td></tr>
+          <tr><td>agent-skills</td><td class="n">25</td><td class="n"><span class="pill p-ok">25 · 100%</span></td><td class="n">93,098</td><td class="n">3,724</td><td class="n">0.38 MB</td><td class="n">72.3</td></tr>
+          <tr><td>openaccountant</td><td class="n">44</td><td class="n"><span class="pill p-ok">43 · 98%</span></td><td class="n">46,670</td><td class="n">1,061</td><td class="n">0.18 MB</td><td class="n">74.0</td></tr>
+          <tr><td>anthropic-doc-skills</td><td class="n">5</td><td class="n"><span class="pill p-ok">5 · 100%</span></td><td class="n">16,641</td><td class="n">3,328</td><td class="n">3.45 MB</td><td class="n">65.8</td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">At census time only <b>616 of the 693</b> were reachable by name; the <i>Reachable</i> column is where a collection silently lost capability to a name clash, and <code>financial-services</code> lost seven skills in ten. <span class="pill p-ok">Fixed 2026-09-04</span> — that column now reads 100% everywhere, and the vault stands at <b>708</b> after the upstream refresh. The vault holds <b>1.72 million tokens</b> of skill body. None of it is billed until something loads it — which is exactly why the vault is the right home for breadth, and why moving rarely-used active skills into it is nearly always the right call.</p>
+    </div>
+  </div

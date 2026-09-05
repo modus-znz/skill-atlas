@@ -1,0 +1,10 @@
+{
+  "_comment": "100-point rubric. Weights sum to 100. Ported verbatim from scan2.py so scores stay comparable with the 2026-09-04 baseline.",
+  "reach":   {"listed": 25, "plugin-on": 23, "hidden": 16, "vault": 12, "plugin-unset": 10, "plugin-off": 8, "_default": 10},
+  "desc":    {"empty": 4, "thin_max": 60, "thin": 12, "good_max": 400, "good": 25, "long_max": 700, "long": 20, "bloated": 12},
+  "depth":   {"stub": 3, "base": 5, "per_subdir": 5, "max": 15},
+  "body":    {"thin_max": 400, "thin": 4, "good_max": 12000, "good": 15, "long_max": 25000, "long": 10, "bloated": 5},
+  "fresh":   {"tiers": [[60, 10], [150, 7], [300, 4]], "stale": 2},
+  "hygiene": {"base": 10, "dup_penalty_max": 5, "collision_penalty": 3},
+  "grades":  {"A": 82, "B": 70, "C": 58, "D": 45}
+}

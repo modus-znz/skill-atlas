@@ -1,0 +1,37 @@
+---
+id: upstream
+asserted_on: 2026-09-04
+assert: {collections: 21}
+---
+<div class="sec-head"><h2>Upstream</h2><p>What the source repositories ship today, against what is cloned here.</p></div>
+  <div class="stack">
+    <p class="lede">Every vault collection is a single-commit snapshot — a squashed or shallow clone with no upstream tracking, so <code>git pull</code> will not refresh any of them. That makes drift invisible locally and worth checking deliberately. <span class="pill p-ok">Refreshed 2026-09-04</span> All seven were checked against upstream and brought current; the table below records the census state and what each refresh did. One census verdict turned out to be wrong — see <code>financial-services</code>.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Collection</th><th>Upstream</th><th class="n">Stars</th><th class="n">Upstream commits</th><th class="n">Local / upstream skills</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>anthropic-doc-skills</b></td><td><code>anthropics/skills</code></td><td class="n">174k</td><td class="n">54</td><td class="n"><s>5</s> <b>19</b> / 19</td><td><span class="pill p-ok">Fixed 2026-09-04</span> — re-cloned in full: <b>5 &rarr; 19 skills</b>, plus <code>spec/agent-skills-spec.md</code> and <code>template/SKILL.md</code>. Includes <code>claude-api</code>, which <code>claude-router</code> had been telling sessions no longer existed. Sparse expansion in place <i>hung</i> — a shallow+sparse repo is the wrong shape for <code>read-tree</code>/<code>merge --ff-only</code>; a fresh <code>clone --depth=1</code> and directory swap took seconds</td></tr>
+        <tr><td><b>knowledge-work</b></td><td><code>anthropics/knowledge-work-plugins</code></td><td class="n">23.9k</td><td class="n">755</td><td class="n">110 / 11 plugins</td><td><span class="pill p-ok">Refreshed 2026-09-04</span> — <code>fetch --depth=1</code> + <code>reset --hard FETCH_HEAD</code> to upstream tip; count unchanged at 110, so the drift was content, not coverage. bio-research and enterprise-search remain outside the sparse scope by choice</td></tr>
+        <tr><td><b>financial-services</b></td><td><code>anthropics/financial-services</code></td><td class="n">34.7k</td><td class="n">67</td><td class="n">57 / 57 in scope</td><td><span class="pill p-ok">Was already current</span> — <b>this census verdict was wrong.</b> Local HEAD already matched upstream; the 57-vs-80 gap is the <i>deliberate</i> IB / PE / KYC sparse exclusion, not drift. A shallow clone hides its own completeness as easily as its staleness</td></tr>
+        <tr><td><b>ecc</b></td><td><code>affaan-m/ecc</code></td><td class="n">248k</td><td class="n">2,631</td><td class="n">286 / 284</td><td><span class="pill p-ok">Current</span> — cloned 2026-08-29; re-verified at tip 2026-09-04. Also ships 68 subagents not taken locally</td></tr>
+        <tr><td><b>agent-skills</b></td><td><code>addyosmani/agent-skills</code></td><td class="n">92.2k</td><td class="n">471</td><td class="n">25 / 25</td><td><span class="pill p-ok">Current</span> — complete, all six lifecycle phases; re-verified at tip 2026-09-04</td></tr>
+        <tr><td><b>corporate</b></td><td><code>w95/awesome-claude-corporate-skills</code></td><td class="n">189</td><td class="n">1</td><td class="n">166 / 166</td><td><span class="pill p-ok">Current</span> — the Feb 2026 date is upstream's own single commit, not local staleness</td></tr>
+        <tr><td><b>openaccountant</b></td><td><code>openaccountant/skills</code></td><td class="n">—</td><td class="n">1</td><td class="n">44 / 44</td><td><span class="pill p-ok">Current</span></td></tr>
+      </tbody>
+    </table></div>
+
+    <div>
+      <h3 style="margin-bottom:10px">What the ecosystem has that this machine does not</h3>
+      <ul class="list">
+        <li><b>ECC's 68 subagents.</b> The skills were cloned, the agents were not. This machine runs 21 resident personas from a different source (The Agency); ECC's are purpose-built for the same workflow the skills describe, so the two halves currently do not meet.</li>
+        <li><s><b>The Agent Skills spec and template</b> from <code>anthropics/skills</code>.</s> <span class="pill p-ok">Closed 2026-09-04</span> Both arrived with the full re-clone; the local <code>agent-skills-spec</code> skill and its <code>validate-skill.py</code> now sit alongside the canonical scaffold.</li>
+        <li><b>financial-services' 11 MCP data connectors</b> (Daloopa, Morningstar, FactSet, PitchBook and others). The skills are here; the connectors they assume are not configured, so several of the 57 will half-work on a real task.</li>
+        <li><b>knowledge-work's enterprise-search plugin</b> — cross-tool search over email, chat and docs. Nothing local covers it.</li>
+      </ul>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:12px;max-width:78ch">One caution before pulling any of this was: <b>volume is not the constraint here</b> — reachability is. Adding 300 more vault skills to a search that already returned one winner out of four for <code>dcf-model</code> would make the library larger and no more useful. <span class="pill p-ok">Order honoured</span> Namespacing was fixed first (queue rows 1&ndash;2), and only then was the vault refreshed (row 8) — so the 15 skills that arrived are all addressable, and the index moved 842 &rarr; <b>859</b> with nothing shadowed away &mdash; 15 from the vault refresh plus the two new active skills from rows 7 and 9. <b>Measured, not inferred:</b> a <code>skill_reindex()</code> against the shipped code returns <code>active 151 · vault 708 · indexed 859</code>. (An earlier draft of this report said 857; that figure was counted by hand and was wrong.)</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Licensing note</h3>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch"><code>anthropic-doc-skills</code> is source-available, not open source — it must not be redistributed and is already excluded from the claude-hub mirror. <code>financial-services</code> is Apache 2.0. Confirm the licence on any new collection before it lands in a mirrored repo.</p>
+    </div>
+  </div

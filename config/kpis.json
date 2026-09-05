@@ -1,0 +1,10 @@
+[
+  {"label": "Distinct skills", "metric": "total",        "note": "{files_scanned} files − {stale_copies} stale copies"},
+  {"label": "Active library",  "metric": "active",       "note": "{listed} listed · {hidden} hidden"},
+  {"label": "Skill vault",     "metric": "vault",        "note": "MCP search only"},
+  {"label": "Plugin cache",    "metric": "plugin",       "note": "{plugin_on} on · {plugin_off} off · {plugin_unset} unset"},
+  {"label": "Listing cost",    "metric": "listing_tok",  "note": "tokens every session · {listing_entries} listed entries"},
+  {"label": "Median grade",    "metric": "median_grade", "note": "{grade_a} A · {grade_b} B · {grade_c} C · {grade_d} D", "raw": true},
+  {"label": "Vault on disk",   "metric": "vault_mb",     "note": "MB across {collections} collections"},
+  {"label": "Needs qualified id", "metric": "shadowed",  "note": "bare-name collisions · all still reachable"}
+]

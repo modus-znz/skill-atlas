@@ -1,0 +1,62 @@
+---
+id: config
+asserted_on: 2026-09-04
+assert: {listed: 46, hidden: 101}
+---
+<div class="sec-head"><h2>Hooks &amp; configuration</h2><p>What actually runs around a session, and what does not.</p></div>
+  <div class="stack">
+
+    <div>
+      <h3 style="margin-bottom:10px">Hook inventory</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Event</th><th>Source</th><th>Action</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>SessionStart</td><td>managed policy</td><td><code>graphify-session-start.sh</code> — verifies graphs and watch services, injects the graph-first rule and live roots (15 s timeout)</td><td><span class="pill p-ok">Live</span></td></tr>
+          <tr><td>SessionStart</td><td>superpowers plugin</td><td>Injects the <code>using-superpowers</code> skill body into every session</td><td><span class="pill p-ok">Live</span></td></tr>
+          <tr><td>PreToolUse · Bash</td><td>user settings</td><td>Rewrites bare <code>sudo</code> to <code>sudo -A</code> so the GUI askpass fires instead of blocking on a TTY</td><td><span class="pill p-ok">Live</span></td></tr>
+          <tr><td>PostToolUse · Stop</td><td>philosophical-brain</td><td><code>probe.py</code> wisdom injection</td><td><span class="pill p-mute">Unwired 2026-09-02</span></td></tr>
+          <tr><td>—</td><td><code>~/.claude/hooks/</code></td><td>Directory does not exist</td><td><span class="pill p-mute">Absent</span></td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Three live hooks for a machine running 25 projects is lean, and deliberately so — the <code>claude-mem</code> evaluation was rejected specifically because it wanted five more, including a <code>PostToolUse</code> on every call. That decision holds. Two additions would still earn their keep, both cheap:</p>
+      <ul class="list" style="margin-top:10px">
+        <li><b>A <code>PreToolUse</code> guard on destructive Bash</b> — <code>rm -rf</code> outside the scratchpad, <code>git push --force</code>, <code>DROP DATABASE</code>. CLAUDE.md already forbids all three in prose; a matcher makes it structural rather than advisory.</li>
+        <li><b>A <code>SessionEnd</code> reminder</b> running <code>rotate-active-status.py --check</code>. The memory rule is the one guardrail that depends entirely on remembering to run a script at the end of a long session, which is precisely when it is most likely to be skipped.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Plugin state — 15 installed, 11 on</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Plugin</th><th class="n">Skills</th><th class="n">Versions cached</th><th class="n">Listing tok</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>superpowers</td><td class="n">14</td><td class="n">1</td><td class="n">598</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>gsap-skills</td><td class="n">8</td><td class="n">1</td><td class="n">749</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>ui-ux-pro-max</td><td class="n">7</td><td class="n">2</td><td class="n">1,413</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>chrome-devtools-mcp</td><td class="n">6</td><td class="n">2</td><td class="n">879</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>video-prep</td><td class="n">2</td><td class="n">1</td><td class="n">209</td><td><span class="pill p-ok">On</span> · 441 MB</td></tr>
+          <tr><td>frontend-design</td><td class="n">1</td><td class="n">7</td><td class="n">426</td><td><span class="pill p-ok">On</span> · <span class="pill p-bad">7 copies</span></td></tr>
+          <tr><td>video-captions</td><td class="n">1</td><td class="n">1</td><td class="n">151</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>claude-video-digest</td><td class="n">1</td><td class="n">1</td><td class="n">137</td><td><span class="pill p-ok">On</span></td></tr>
+          <tr><td>hyperframes</td><td class="n"><s style="opacity:.45">26</s> 20</td><td class="n"><s style="opacity:.45">3</s> 1</td><td class="n">13,616</td><td><span class="pill p-mute">Off</span> · <span class="pill p-ok">2026-09-04</span> router corrected ~19 &rarr; 20; the 26 unioned skills across three cached versions</td></tr>
+          <tr><td>expo</td><td class="n">24</td><td class="n"><s style="opacity:.45">3</s> 1</td><td class="n">7,956</td><td><span class="pill p-mute">Off</span> · <span class="pill p-ok">2026-09-04</span> router corrected ~21 &rarr; 24; two stale versions pruned</td></tr>
+          <tr><td>figma</td><td class="n">14</td><td class="n">1</td><td class="n">2,161</td><td><span class="pill p-info">Unset</span> · project scope</td></tr>
+          <tr><td>supabase</td><td class="n">2</td><td class="n">1</td><td class="n">344</td><td><span class="pill p-mute">Off</span></td></tr>
+          <tr><td>skill-creator</td><td class="n">1</td><td class="n">7</td><td class="n">646</td><td><span class="pill p-mute">Off</span> · <span class="pill p-bad">7 copies</span></td></tr>
+          <tr><td>claude-code-setup</td><td class="n">1</td><td class="n">1</td><td class="n">—</td><td><span class="pill p-mute">Off</span></td></tr>
+          <tr><td>claude-md-management</td><td class="n">1</td><td class="n">1</td><td class="n">—</td><td><span class="pill p-mute">Off</span></td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">hyperframes is the single most expensive thing that could be switched on: <b>13,616 tokens</b> of standing cost for 26 skills, on a machine with no hyperframes artifact anywhere on disk. Keeping it off is correct — but so is deleting the three cached versions, since nothing loads them.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Reachability mechanics worth remembering</h3>
+      <ul class="list">
+        <li><b><code>skillOverrides</code> does not apply to plugin skills.</b> Hiding is only available for <code>~/.claude/skills/</code>. A plugin is all-or-nothing: enabled means all its skills are listed, at full description cost.</li>
+        <li><b>Hidden is not disabled.</b> The 100 overridden skills work exactly as before — they are absent from the model's automatic selection, and reachable by <code>/name</code> or <code>skill_search</code>.</li>
+        <li><b>The skill-router MCP excludes the plugin cache by design</b> — plugin skills are never hidden, so indexing them would only duplicate the listing.</li>
+        <li><b>Project settings can re-enable a family.</b> <code>odoo-*</code> is already re-listed inside <code>/opt/odoo19-custom-addons/</code> and nowhere else. This is the right pattern for figma and expo too, rather than a global switch.</li>
+      </ul>
+    </div>
+  </div
