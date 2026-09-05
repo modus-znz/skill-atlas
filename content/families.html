@@ -1,0 +1,51 @@
+---
+id: families
+asserted_on: 2026-09-06
+assert: {active: 148, listed: 47}
+---
+<div class="sec-head"><h2>Family density</h2><p>Whether a small category is a gap worth filling or a domain that is simply finished.</p></div>
+  <div class="stack">
+    <p class="lede">The active library sorts into eleven families, and five of them hold six skills or fewer. The obvious reading — thin means missing — turns out to be wrong for four of the five. What actually separates a healthy small family from a gap is not the count but the <b>spread</b>: how far apart the best and worst member score. A family with four skills and a twelve-point spread is being measured. A family with sixty-two skills and a spread of zero is not.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Family</th><th class="n">Skills</th><th class="n">Listed</th><th class="n">Avg</th><th class="n">Range</th><th class="n">Spread</th><th class="n">Grades</th><th class="n">Load tok / skill</th></tr></thead>
+      <tbody>{{ table.active_families }}</tbody>
+    </table></div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Thin by count, dense by quality — four of the five need nothing</h3>
+      <p style="max-width:78ch"><b>Video production</b> (4 skills, avg 90.5, all A), <b>Motion &amp; animation</b> (6, avg 89.3, all A), <b>Editor &amp; model tooling</b> (4, avg 83.0) and <b>Writing &amp; documents</b> (6, avg 85.7) are small because their domains are small, not because coverage is short. Editor tooling is the clearest case: it is bounded by how many host editors exist, so it can only grow when a new editor does. Adding skills to any of these four would add listing weight and no capability. <span class="pill p-ok">No action</span></p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Build &amp; release looked like the real gap. It was a discovery problem.</h3>
+      <p style="max-width:78ch">One skill, and the first instinct was to go shopping upstream. That instinct was wrong, and it is worth recording why: the vault <i>already</i> holds <code>devops/release/semantic-versioning</code> (MIT, 477 lines — SemVer, conventional commits, <code>semantic-release</code>, GitHub Actions release workflows), plus <code>changelog-generator</code>, <code>git-workflow-and-versioning</code>, <code>feature-flags</code>, <code>blue-green-deploy</code> and five sigstore/SBOM/cosign supply-chain skills. Every one of them wins its own <code>skill_search</code>. The coverage was never missing; nothing <i>pointed</i> at it.</p>
+      <p style="max-width:78ch">So the fix is a pointer, not an acquisition. <span class="pill p-ok">Fixed 2026-09-06</span> A routing bullet now sits in <code>claude-router</code>'s decision list with the detail in <code>references/skill-vault.md</code> §Release engineering. Promoting <code>semantic-versioning</code> to <code>listed</code> was considered and rejected on measurement: a vault skill costs <b>0 listing tokens</b> and is already fully reachable via <code>skill_search</code>/<code>skill_load</code>, so a copy in <code>~/.claude/skills/</code> would buy no reach and cost a name collision (&minus;3 hygiene, one shadowed entry).</p>
+      <p style="max-width:78ch">One genuine gap survives the audit: <b>monorepo release orchestration</b> — changesets, lerna, nx, turborepo — verified absent across the entire vault (zero keyword hits, 2026-09-06). It is worth acquiring when a monorepo actually needs releasing, and not before. API <i>deprecation mechanics</i> (sunset headers, version negotiation, migration windows) are thin, though the doctrine behind them is already solid in <code>api-and-interface-design</code>.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Design aesthetics: 62 skills, every one scoring exactly 81</h3>
+      <p style="max-width:78ch">This is the strongest finding on the page, and it is about the rubric rather than the skills. Design aesthetics is <b>42% of the active library</b> and its score spread is <b>zero</b> — every member scores 81, with identical parts (<code>reach 16 · desc 25 · depth 5 · body 15 · fresh 10 · hygiene 10</code>). The mechanism is now confirmed in <code>atlas/score.py</code>: five of the six dimensions saturate for all 62, and <code>depth</code> sits uniformly at <code>base</code> = 5 because every one of them has more than one file and none has a qualifying subdirectory. A rubric that returns a constant over the largest family has stopped ranking inside it — the grade is noise wearing the costume of a signal.</p>
+      <p style="max-width:78ch"><span class="pill p-ok">Detected 2026-09-06</span> <code>atlas.py doctor</code> now reports any family of ten or more with zero score variance as a <b>notice</b>. Deliberately a notice and deliberately additive: retuning the weights to break the tie would change every score in the report and break comparability with the 2026-09-04 baseline that <code>atlas.py diff</code> measures against. The check fires on exactly one family today — <code>Build &amp; release</code> also has a spread of zero, but at n=1 that is arithmetic, not a blind spot, which is why the threshold is n&nbsp;&ge;&nbsp;10.</p>
+      <p style="max-width:78ch"><b>What would actually fix it</b>, when comparability is worth spending: these are aesthetic <i>systems</i>, so the dimension that would separate them is whether a skill ships something executable — a token file, a component sample, a reference page — rather than prose alone. That is a new dimension, not a re-weighting of an existing one, and it belongs in a deliberate rubric v2 with a fresh baseline rather than a quiet edit to <code>config/rubric.json</code>.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Five listed skills carried their whole manual on every invocation</h3>
+      <p style="max-width:78ch">The audit's other correction ran the opposite way. <code>body</code> is a bell curve, not a floor — <code>thin &lt;400 = 4</code>, <code>good = 15</code>, <code>long = 10</code>, <code>bloated &gt;25,000 = 5</code> — so a low body score is ambiguous between too short and too long, and these five were far too <i>long</i>: single-file SKILL.md documents of 27,000&ndash;40,000 characters, all of them <code>listed</code>, all scoring B78 on the identical fingerprint <code>depth 3 + body 5</code>.</p>
+      <p style="max-width:78ch"><span class="pill p-ok">Fixed 2026-09-06</span> All five were split on their existing <code>##</code> boundaries into a lean SKILL.md plus a <code>references/</code> bundle — the standard progressive-disclosure pattern from the Agent Skills spec. Every source section was asserted to land somewhere exactly once, so nothing was dropped to buy a score.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Skill</th><th class="n">SKILL.md before</th><th class="n">after</th><th class="n">Load tok before</th><th class="n">after</th><th class="n">Grade</th></tr></thead>
+        <tbody>
+          <tr><td><code>imagegen-frontend-mobile</code></td><td class="n">39,773</td><td class="n">11,645</td><td class="n">11,048</td><td class="n">3,235</td><td class="n">B78 &rarr; <b>A95</b></td></tr>
+          <tr><td><code>imagegen-frontend-web</code></td><td class="n">36,251</td><td class="n">11,280</td><td class="n">10,070</td><td class="n">3,133</td><td class="n">B78 &rarr; <b>A95</b></td></tr>
+          <tr><td><code>image-to-code</code></td><td class="n">35,928</td><td class="n">11,838</td><td class="n">9,980</td><td class="n">3,288</td><td class="n">B78 &rarr; <b>A95</b></td></tr>
+          <tr><td><code>humanizer</code></td><td class="n">30,166</td><td class="n">6,761</td><td class="n">8,379</td><td class="n">1,878</td><td class="n">B78 &rarr; <b>A95</b></td></tr>
+          <tr><td><code>emil-design-eng</code></td><td class="n">27,092</td><td class="n">9,565</td><td class="n">7,526</td><td class="n">2,657</td><td class="n">B78 &rarr; <b>A95</b></td></tr>
+        </tbody>
+      </table></div>
+      <p style="max-width:78ch">The grade is the smaller half of the win. These five are <code>listed</code>, so the rules that moved into <code>references/</code> are now paid for only when a session actually opens them — about <b>32,700 tokens</b> of invocation cost that no longer lands by default.</p>
+      <p style="max-width:78ch"><b>One skill was deliberately left alone.</b> <code>remotion-render</code> scores B75 on <code>body = 4</code> (thin), and that is the rubric penalising correct practice: its SKILL.md is already a lean index delegating to <code>transparent-videos.md</code>. It is also vendored upstream at <code>version 4.0.507</code>, so any local edit would be overwritten on the next refresh. It stays as it is, and stands as evidence that the <code>body</code> curve mis-reads progressive disclosure at both ends.</p>
+    </div>
+  </div>

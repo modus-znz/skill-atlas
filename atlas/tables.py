@@ -76,7 +76,43 @@ def plugins(payload):
     return "".join(out)
 
 
-BUILDERS = {"vault_collections": vault_collections, "plugins": plugins}
+def active_families(payload):
+    """Per-family density for the active library, thinnest first.
+
+    `Spread` is the point that a per-skill table cannot make: a family whose best
+    and worst skill score the same is a family the rubric has stopped measuring.
+    Computed from the skill rows rather than the category nodes, because the nodes
+    carry an average and an average hides exactly that.
+    """
+    fams = {}
+    for s in payload["skills"]:
+        if s["s"] != "active":
+            continue
+        f = s["p"][1] if len(s["p"]) > 1 else "?"
+        d = fams.setdefault(f, {"sc": [], "listed": 0, "ld": 0, "g": {}})
+        d["sc"].append(s["sc"])
+        d["listed"] += 1 if s["r"] == "listed" else 0
+        d["ld"] += s["ld"]
+        d["g"][s["g"]] = d["g"].get(s["g"], 0) + 1
+    out = []
+    for f, d in sorted(fams.items(), key=lambda kv: (len(kv[1]["sc"]), kv[0])):
+        sc, n = d["sc"], len(d["sc"])
+        spread = max(sc) - min(sc)
+        cls = "p-bad" if spread == 0 and n >= 10 else "p-ok" if spread >= 10 else "p-warn"
+        mix = " · ".join(f"{v}{k}" for k, v in sorted(d["g"].items()))
+        out.append(
+            f'<tr><td><b>{f}</b></td><td class="n">{n}</td>'
+            f'<td class="n">{d["listed"]}</td>'
+            f'<td class="n">{sum(sc)/n:.1f}</td>'
+            f'<td class="n">{min(sc):.0f}&ndash;{max(sc):.0f}</td>'
+            f'<td class="n"><span class="pill {cls}">{spread:.0f}</span></td>'
+            f'<td class="n">{mix}</td>'
+            f'<td class="n">{round(d["ld"]/n):,}</td></tr>')
+    return "".join(out)
+
+
+BUILDERS = {"vault_collections": vault_collections, "plugins": plugins,
+            "active_families": active_families}
 
 
 def build_all(payload):

@@ -176,7 +176,8 @@ ul.list b{color:var(--ink)}
   <div class="wrap">
     <button class="tab" role="tab" aria-selected="true" data-p="overview">Overview</button>
     <button class="tab" role="tab" aria-selected="false" data-p="categories">Category tree</button>
-    <button class="tab" role="tab" aria-selected="false" data-p="skills">All 951 skills</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="skills">All skills</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="families">Family density</button>
     <button class="tab" role="tab" aria-selected="false" data-p="health">Health &amp; findings</button>
     <button class="tab" role="tab" aria-selected="false" data-p="cost">Token cost</button>
     <button class="tab" role="tab" aria-selected="false" data-p="config">Hooks &amp; config</button>
@@ -249,6 +250,11 @@ ul.list b{color:var(--ink)}
     </tr></thead>
     <tbody id="rows"></tbody>
   </table></div>
+</section>
+
+<!-- ======================= FAMILIES ======================= -->
+<section class="panel" id="p-families" role="tabpanel" hidden>
+<!--CONTENT:families-->
 </section>
 
 <!-- ======================= HEALTH ======================= -->

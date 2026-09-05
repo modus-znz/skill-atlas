@@ -18,6 +18,10 @@ import re
 from atlas import config, dataset, diffs, render as render_mod, scan as scan_mod
 from atlas.taxonomy import Taxonomy
 
+# A family smaller than this can be legitimately uniform by chance;
+# above it, a zero spread is the rubric failing to discriminate.
+FLAT_FAMILY_MIN = 10
+
 
 def cmd_scan(argv):
     scan_mod.run()
@@ -156,6 +160,24 @@ def cmd_doctor(argv):
               f"{' (each renders a badge in the report)' if notices else ''}")
     else:
         print("  no report built yet; narrative not checked")
+
+    # A rubric that returns the SAME score for every member of a large family has
+    # stopped measuring that family -- it cannot rank within it, so the grade is
+    # noise dressed as signal. Design aesthetics is the standing case: 62 skills,
+    # every one at 81, because five dimensions saturate and `depth` is uniform at
+    # base (>1 file, no qualifying subdir). This is a NOTICE and deliberately does
+    # not touch the weights: retuning the rubric would break comparability with the
+    # 2026-09-04 baseline that every `atlas.py diff` is measured against.
+    fams = collections.defaultdict(list)
+    for s in (r for r in rows if r["source"] == "active"):
+        fams[tax.family(s["name"])].append(s["score"])
+    flat = [(f, v) for f, v in fams.items()
+            if len(v) >= FLAT_FAMILY_MIN and max(v) == min(v)]
+    for f, v in sorted(flat, key=lambda kv: -len(kv[1])):
+        notices += 1
+        print(f"  rubric blind spot: {f} -- {len(v)} skills, all scoring {v[0]:.0f}; "
+              f"the rubric cannot rank inside this family")
+    print(f"  families with zero score variance (n>={FLAT_FAMILY_MIN}): {len(flat)}")
 
     print(f"\ndoctor: {problems} problem(s), {notices} notice(s)")
     return 1 if problems else 0
