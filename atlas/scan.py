@@ -80,10 +80,20 @@ def iter_units(spec, root, skip):
     agents the same `dir` and collapse them onto one identity.
     """
     if spec.get("layout") == "flat":
+        follow = spec.get("follow_symlinks", False)
         for f in sorted(os.listdir(root)):
             fp = os.path.join(root, f)
-            if f.endswith(".md") and os.path.isfile(fp):
-                yield fp, None
+            # `os.path.isfile` follows symlinks, so the root's follow_symlinks
+            # flag would be inert here without this check. It matters: the
+            # vendor `agency` installer symlinks INTO the persona clone, and a
+            # symlinked agent would be stat'd through to the clone -- taking
+            # the clone's mtime and reporting an age that describes when the
+            # repo was pulled, not when the agent was installed.
+            if not f.endswith(".md") or not os.path.isfile(fp):
+                continue
+            if os.path.islink(fp) and not follow:
+                continue
+            yield fp, None
         return
     for r, dirs, files in os.walk(root, followlinks=spec.get("follow_symlinks", False)):
         dirs[:] = [x for x in dirs if x not in skip]
@@ -184,6 +194,15 @@ def mark_collisions(rows):
     byname = {}
     for s in rows:
         if s["source"] == "plugin" and not s["is_latest"]:
+            continue
+        # Agents live in a separate namespace, reached by Agent(subagent_type:)
+        # rather than by skill name, so an agent and a skill sharing a name do
+        # not actually shadow each other. Left in, `agency add code-reviewer`
+        # would silently dock 3 hygiene points from the SKILL called
+        # code-reviewer -- a real skill regrading because of an unrelated
+        # install. Excluded here, so the collision metric stays a statement
+        # about skills, exactly like every other grade aggregate.
+        if s["source"] == "agent":
             continue
         byname.setdefault(s["name"], []).append(s)
     for s in rows:
