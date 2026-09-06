@@ -47,7 +47,27 @@ def cmd_build(argv):
           f"{os.path.getsize(config.REPORT_JSON):,} B")
     print(f"  listing {m['listing_tok']:,} tok/session over {m['listing_entries']} entries")
     print(f"  grades  {m['grade_a']} A · {m['grade_b']} B · {m['grade_c']} C · {m['grade_d']} D")
+    _publish_grafana()
     return 0
+
+
+def _publish_grafana():
+    """Optional, non-fatal: push the run history to Postgres for Grafana.
+
+    Only fires when a connection is actually configured ($ATLAS_PG_DSN or an
+    untracked grafana/db.env) -- on a machine without the dashboard DB this is a
+    silent no-op, so `build` stays standalone. A publish failure is a warning,
+    never a build failure: the report is the source of truth, Grafana is a mirror.
+    """
+    if not (os.environ.get("ATLAS_PG_DSN")
+            or os.path.exists(os.path.join(config.PROJECT, "grafana", "db.env"))):
+        return
+    try:
+        sys.path.insert(0, os.path.join(config.PROJECT, "bin"))
+        import load_grafana
+        load_grafana.main()
+    except Exception as e:  # a mirror that fails must not break the build
+        print(f"  grafana publish skipped: {e}", file=sys.stderr)
 
 
 def cmd_render(argv):

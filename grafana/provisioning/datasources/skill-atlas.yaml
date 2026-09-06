@@ -1,0 +1,21 @@
+# Skill Atlas trends datasource. The password is interpolated from the
+# SKILL_ATLAS_RO_PASSWORD environment variable at Grafana startup, so this
+# tracked file carries structure but never the secret. The env var is set in a
+# systemd drop-in (see grafana/README.md), which is NOT in the repo.
+apiVersion: 1
+datasources:
+  - name: Skill Atlas
+    uid: skill-atlas-pg
+    type: postgres
+    access: proxy
+    url: 127.0.0.1:5432
+    user: grafana_ro
+    database: skill_atlas
+    isDefault: false
+    editable: false
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1700
+      timescaledb: false
+    secureJsonData:
+      password: ${SKILL_ATLAS_RO_PASSWORD}
