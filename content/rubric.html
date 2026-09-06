@@ -42,7 +42,7 @@ assert: {}
     <div class="card">
       <h4 style="margin-bottom:8px">Method</h4>
       <ul class="list">
-        <li>Walked three roots, parsing YAML frontmatter from every <code>SKILL.md</code>; symlinks not followed, <code>.git</code> and <code>node_modules</code> excluded. <b>{{ metrics.files_scanned }} files.</b></li>
+        <li>Walked four roots, parsing YAML frontmatter from every <code>SKILL.md</code> &mdash; and, in the flat <code>~/.claude/agents</code> root, from every <code>&lt;slug&gt;.md</code> carrying a <code>name:</code> key. Symlinks not followed, <code>.git</code> and <code>node_modules</code> excluded. <b>{{ metrics.files_scanned }} files.</b></li>
         <li>Collapsed the plugin cache to the newest version per <code>(plugin, skill)</code> — semver preferred, mtime as the tiebreak for hash-named directories. <b>{{ metrics.stale_copies }} superseded copies removed → {{ metrics.total }}.</b></li>
         <li>Reachability derived from <code>skillOverrides</code> and <code>enabledPlugins</code> in <code>~/.claude/settings.json</code>, not from documentation.</li>
         <li>Token figures are estimates at <b>chars ÷ 3.6</b>. Good to roughly ±10% for English prose with code fences; treat them as comparative, not exact.</li>

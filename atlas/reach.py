@@ -7,10 +7,14 @@ Six states, driven by ~/.claude/settings.json:
   plugin-on     plugin explicitly enabled in enabledPlugins
   plugin-off    plugin explicitly disabled
   plugin-unset  plugin present in the cache but named nowhere in settings
+  agent         resident subagent, dispatched by Agent(subagent_type:) -- billed
+                into the system prompt every session, but from a roster that is
+                allocated separately from the skill listing budget
 """
 LABELS = {
     "listed": "Listed", "hidden": "Hidden (/name)", "vault": "Vault (MCP)",
     "plugin-on": "Plugin on", "plugin-off": "Plugin off", "plugin-unset": "Plugin unset",
+    "agent": "Agent (dispatch)",
 }
 
 
@@ -24,6 +28,13 @@ def classify(rows, settings):
             s["reach"] = "hidden" if s["hidden"] else "listed"
         elif s["source"] == "vault":
             s["hidden"], s["reach"] = True, "vault"
+        elif s["source"] == "agent":
+            # Always dispatchable and always billed, so not "hidden" in the sense
+            # the other states use -- but reached through Agent(subagent_type:),
+            # never through the skill listing or skill_load. Its own state, or the
+            # else-branch below would read settings.enabledPlugins for a plugin
+            # named "" and file every agent as plugin-unset.
+            s["hidden"], s["reach"] = False, "agent"
         else:
             # enabledPlugins keys may be bare or "name@marketplace"
             en = enabled.get(s["plugin"])

@@ -2,7 +2,7 @@
 id: cost
 title: Context cost
 asserted_on: 2026-09-05
-assert: {listing_over_budget: 0, desc_bloated_billed: 0}
+assert: {listing_over_budget: 0, desc_bloated_billed: 0, agents: 21, agent_desc_missing: 0}
 ---
 <div class="sec-head"><h2>Token cost</h2><p>Two very different budgets, routinely conflated.</p></div>
   <div class="stack">
@@ -24,6 +24,17 @@ assert: {listing_over_budget: 0, desc_bloated_billed: 0}
         </tbody>
       </table></div>
       <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Read that bottom line carefully: the visibility discipline on this machine avoids <b>{{ metrics.listing_avoided_ratio }}× what it spends</b>. Turning every hidden skill and disabled plugin on would take the skill prefix from {{ metrics.listing_tok }} to <b>{{ metrics.listing_all_on_tok }}</b> tokens on every request — before a single skill is used. The vault sits outside that trade entirely: it is not a listing candidate at any setting, which is why it costs 0 rather than appearing in the avoided column. Were its {{ metrics.vault }} skills listable, they would want <b>{{ metrics.listing_tok_vault }}</b> tokens, against a listing budget of {{ metrics.listing_budget_tok }}. That gap is the whole argument for the vault.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">The second billed listing — resident agents</h3>
+      <p class="mut" style="margin:0 0 10px;font-size:12.5px;max-width:78ch">Added as a fourth scan root on 2026-09-06. Everything above this point measures the <b>skill</b> listing and its {{ metrics.listing_budget_tok }}-token budget. The agent roster is a <i>separate</i> standing cost, drawn from its own allocation — so it is reported here beside that budget and deliberately never added into it.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Domain</th><th class="n">Agents</th><th class="n">Listing tok</th><th class="n">Avg each</th><th class="n">Load tok</th><th class="n">On disk</th><th class="n">Age (d)</th></tr></thead>
+        <tbody>{{ table.agent_domains }}</tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">The headline: <b>{{ metrics.agents }} residents cost {{ metrics.agent_listing_tok }} tokens</b> in every request, against <b>{{ metrics.listing_tok }}</b> for all {{ metrics.listing_entries }} listed skills and plugins combined. The roster is roughly a third again on top of the skill listing, and until this root existed the census could not see it at all — the true standing cost of the prefix was being under-reported by that whole amount. It is money well spent at this size, and the measurement is a pleasing independent check on the hand-made one: <code>CLAUDE.md</code> has long carried a <i>~1.3k tokens per session</i> estimate for the roster, and a scan that had never been pointed at the directory puts it at {{ metrics.agent_listing_tok }}. The number worth watching is the marginal one: <b>{{ metrics.agent_listing_tok_each }} tokens per resident</b>, paid on every request for the life of the install. The roster has no equivalent of the vault — there is no place to park an agent where it stays reachable but stops billing, so unlike a skill, an agent you install is an agent you pay for. Twenty-one is a sound call at this price; the guardrail is simply to add the twenty-second deliberately rather than by habit, and to evict on the same terms.</p>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Agents carry <b>no grade</b> anywhere in this report, and that is a design decision rather than a gap. Three of the six rubric dimensions are structurally pinned for them — <code>depth</code> is always <i>stub</i> because an agent is a single file <i>by design</i>, <code>reach</code> has no listing state to grade, and <code>hygiene</code> measures a duplication mode they cannot have. A score built from the surviving three would still print beside skill grades and invite a comparison that means nothing. Better a visible <span class="pill p-mute">n/a</span> than a confident number measuring the wrong thing. Their {{ metrics.agent_bytes_kb }} KB of prose is instead held to the one standard that does transfer: every resident has a real description, and <b>{{ metrics.agent_desc_missing }}</b> are missing one.</p>
     </div>
 
     <div>

@@ -282,7 +282,7 @@ ul.list b{color:var(--ink)}
 <!--CONTENT:rubric-->
 </section>
 
-<p class="foot">Computed from a filesystem scan of <code>~/.claude/skills</code>, <code>~/.claude/skill-vault</code> and <code>~/.claude/plugins/cache</code>, plus <code>settings.json</code> and the managed policy file. Counts, scores and token estimates are reproducible from that scan. Density verdicts and the findings above are judgement, grounded in the 25 project roots on this machine. Typography and palette follow the Mchuzi Suite design tokens.<br><br><b>Revision 2026-09-04 — all nine upgrade-queue rows applied.</b> Struck-through figures are the census state; the bold figure beside each is what is on disk now. Three rows turned out to be measured wrong and say so where they stand rather than being quietly rewritten: row 4 blamed 7 MB of hash directories for 767 MB that was elsewhere, row 5 counted four short descriptions where there were ten, and row 8 called <code>financial-services</code> drifted when it was already at upstream tip. One target was missed on purpose — row 3 asked for a ~6 KB <code>claude-router</code> and got ~26 KB, because the two sections that make it worth loading are 15 KB between them. The <b>per-skill list</b> below is the original census, unmodified. In the tables above, a struck-through figure is the census value and the bold figure beside it is what is on disk now.</p>
+<p class="foot">Computed from a filesystem scan of <code>~/.claude/skills</code>, <code>~/.claude/skill-vault</code>, <code>~/.claude/plugins/cache</code> and <code>~/.claude/agents</code>, plus <code>settings.json</code> and the managed policy file. Counts, scores and token estimates are reproducible from that scan. Density verdicts and the findings above are judgement, grounded in the 25 project roots on this machine. Typography and palette follow the Mchuzi Suite design tokens.<br><br><b>Revision 2026-09-04 — all nine upgrade-queue rows applied.</b> Struck-through figures are the census state; the bold figure beside each is what is on disk now. Three rows turned out to be measured wrong and say so where they stand rather than being quietly rewritten: row 4 blamed 7 MB of hash directories for 767 MB that was elsewhere, row 5 counted four short descriptions where there were ten, and row 8 called <code>financial-services</code> drifted when it was already at upstream tip. One target was missed on purpose — row 3 asked for a ~6 KB <code>claude-router</code> and got ~26 KB, because the two sections that make it worth loading are 15 KB between them. The <b>per-skill list</b> below is the original census, unmodified. In the tables above, a struck-through figure is the census value and the bold figure beside it is what is on disk now.</p>
 </main>
 
 <script>
@@ -327,7 +327,7 @@ function renderTree() {
       '<span class="tname"><em>' + (kids || n.n <= 60 ? (isOpen ? '−' : '+') : ' ') + '</em>' +
       '<span>' + n.path[n.path.length - 1] + '</span> ' + verdict(n) + '</span>' +
       '<span class="n">' + n.n + '</span>' +
-      '<span class="n">' + n.avg + '</span>' +
+      '<span class="n">' + (n.avg === null ? '&mdash;' : n.avg) + '</span>' +
       '<span class="n hidesm">' + (n.lt ? n.lt.toLocaleString() : '—') + '</span>' +
       '<span class="tbar hidesm"><b style="width:' + Math.max(2, Math.round(n.n / maxN * 100)) + '%"></b></span>';
     b.addEventListener('click', () => {
@@ -337,13 +337,14 @@ function renderTree() {
     host.appendChild(b);
     if (isOpen && !kids) {
       DATA.skills.filter(s => s.p.join(' / ') === n.key)
-        .sort((a, b2) => b2.sc - a.sc).forEach(s => {
+        .sort((a, b2) => (b2.sc === null ? -1 : b2.sc) - (a.sc === null ? -1 : a.sc)).forEach(s => {
           const d = document.createElement('div');
           d.className = 'tleaf';
           d.innerHTML = '<span><span class="ln">' + s.n + '</span> <span class="ld">' +
             (s.d || '').replace(/[<>&]/g, c => ({'<': '&lt;', '>': '&gt;', '&': '&amp;'}[c])).slice(0, 130) + '</span></span>' +
-            '<span class="n"><span class="pill g' + s.g + '">' + s.g + '</span></span>' +
-            '<span class="n hidesm">' + s.sc + '</span>';
+            '<span class="n">' + (s.g === null ? UNSCORED :
+              '<span class="pill g' + s.g + '">' + s.g + '</span>') + '</span>' +
+            '<span class="n hidesm">' + (s.sc === null ? '&mdash;' : s.sc) + '</span>';
           host.appendChild(d);
         });
     }
@@ -356,6 +357,10 @@ $('#exp-none').addEventListener('click', () => { open.clear(); renderTree(); });
 renderTree();
 
 /* ---------- skills table ---------- */
+// Agents are censused but deliberately unscored (three of the six rubric
+// dimensions do not apply to a single dispatched file), so every grade surface
+// has to render an ABSENCE rather than the string "null". One helper, three sites.
+const UNSCORED = '<span class="pill p-mute" title="Censused, not graded: depth, reach and hygiene do not apply to a dispatched agent">n/a</span>';
 const F = {scope: new Set(), reach: new Set(), grade: new Set(), sh: new Set(), q: ''};
 let sortK = 'sc', sortDir = 'd';
 
@@ -372,9 +377,15 @@ function chips(host, key, opts) {
     h.appendChild(b);
   });
 }
-chips('#f-scope', 'scope', [['active', 'Active (149)'], ['vault', 'Vault (693)'], ['plugin', 'Plugin (109)']]);
+// Counts are computed, not typed. The hand-written ones had drifted badly --
+// the vault chip read "693" against a real 1,819 -- and a filter label that lies
+// about its own population is the same defect the assertion system exists to catch.
+const SCOPE_N = DATA.skills.reduce((a, s) => (a[s.s] = (a[s.s] || 0) + 1, a), {});
+chips('#f-scope', 'scope', [['active', 'Active'], ['vault', 'Vault'],
+  ['plugin', 'Plugin'], ['agent', 'Agents']].map(([k, l]) => [k, l + ' (' + (SCOPE_N[k] || 0) + ')']));
 chips('#f-reach', 'reach', [['listed', 'Listed'], ['hidden', 'Hidden'], ['vault', 'Vault'],
-  ['plugin-on', 'Plugin on'], ['plugin-off', 'Plugin off'], ['plugin-unset', 'Unset']]);
+  ['plugin-on', 'Plugin on'], ['plugin-off', 'Plugin off'], ['plugin-unset', 'Unset'],
+  ['agent', 'Agent']]);
 chips('#f-grade', 'grade', [['A', 'A'], ['B', 'B'], ['C', 'C'], ['D', 'D']]);
 chips('#f-sh', 'sh', [[1, 'Shadowed only (77)'], [0, 'Reachable only']]);
 $('#q').addEventListener('input', e => { F.q = e.target.value.toLowerCase().trim(); renderRows(); });
@@ -417,8 +428,9 @@ function renderRows() {
     esc(s.d).slice(0, 150) + '</div></td>' +
     '<td style="font-size:12px;color:var(--ink-2);white-space:nowrap">' + esc(s.p.join(' › ')) + '</td>' +
     '<td><span class="pill p-mute">' + s.rl + '</span></td>' +
-    '<td class="n"><span class="sbar"><span class="pill g' + s.g + '">' + s.g + '</span>' +
-      '<i><b style="width:' + s.sc + '%"></b></i><span>' + s.sc + '</span></span></td>' +
+    '<td class="n">' + (s.g === null ? UNSCORED :
+      '<span class="sbar"><span class="pill g' + s.g + '">' + s.g + '</span>' +
+      '<i><b style="width:' + s.sc + '%"></b></i><span>' + s.sc + '</span></span>') + '</td>' +
     '<td class="n">' + s.lt + '</td><td class="n">' + s.ld.toLocaleString() + '</td>' +
     '<td class="n">' + s.bf + '</td><td class="n">' + Math.round(s.ag) + '</td>' +
     '<td>' + flags(s) + '</td></tr>').join('');

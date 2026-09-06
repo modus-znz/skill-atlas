@@ -111,8 +111,39 @@ def active_families(payload):
     return "".join(out)
 
 
+def agent_domains(payload):
+    """The resident agent roster, rolled up by domain.
+
+    No score column, and that is the point: agents are censused, not graded. What
+    matters about them is what the session PAYS -- the roster is billed into the
+    system prefix on every request from an allocation separate to the skill
+    listing, so it is measured beside that listing and never added into it.
+    """
+    doms = {}
+    for s in payload["skills"]:
+        if s["s"] != "agent":
+            continue
+        d = doms.setdefault(s["p"][1] if len(s["p"]) > 1 else "Other",
+                            {"n": 0, "lt": 0, "ld": 0, "bb": 0, "ag": []})
+        d["n"] += 1
+        d["lt"] += s["lt"]
+        d["ld"] += s["ld"]
+        d["bb"] += s["bb"]
+        d["ag"].append(s["ag"])
+    out = []
+    for f, d in sorted(doms.items(), key=lambda kv: -kv[1]["n"]):
+        out.append(
+            f'<tr><td><b>{f}</b></td><td class="n">{d["n"]}</td>'
+            f'<td class="n">{d["lt"]:,}</td>'
+            f'<td class="n">{round(d["lt"] / d["n"]):,}</td>'
+            f'<td class="n">{d["ld"]:,}</td>'
+            f'<td class="n">{round(d["bb"] / 1024):,} KB</td>'
+            f'<td class="n">{round(sum(d["ag"]) / len(d["ag"]))}</td></tr>')
+    return "".join(out)
+
+
 BUILDERS = {"vault_collections": vault_collections, "plugins": plugins,
-            "active_families": active_families}
+            "active_families": active_families, "agent_domains": agent_domains}
 
 
 def build_all(payload):

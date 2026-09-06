@@ -25,7 +25,7 @@ No packages to install.
 ## How it works
 
 ```
-scan    walk 3 roots, parse frontmatter, dedupe, score   -> data/skills.json
+scan    walk 4 roots, parse frontmatter, dedupe, score   -> data/skills.json
 reach   ask skill-router/lib.mjs who wins each bare name -> data/router-index.json
 build   category tree + rollups + metrics + snapshot     -> data/report-data.json
                                                          +  data/skill-keys.json

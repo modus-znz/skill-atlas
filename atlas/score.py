@@ -71,6 +71,17 @@ def grade_for(score, thresholds):
 def score_all(rows, rub):
     depth_subdirs = set(config.roots()["depth_subdirs"])
     for s in rows:
+        if s["source"] == "agent":
+            # Deliberately unscored. Three of the six dimensions are structurally
+            # pinned for an agent: `depth` is always `stub` (single file BY DESIGN,
+            # not by neglect), `reach` has no listing state to grade, and `hygiene`
+            # measures a duplication mode agents cannot have. A score built from
+            # the remaining three would still print alongside skill grades and
+            # invite a comparison that means nothing -- the same "noise dressed as
+            # signal" the flat-family doctor notice exists to flag. Censused and
+            # costed instead; see the agent_* metrics.
+            s["score"], s["grade"], s["score_parts"] = None, None, {}
+            continue
         s["score"] = score_one(s, rub, depth_subdirs)
         s["grade"] = grade_for(s["score"], rub["grades"])
     return rows

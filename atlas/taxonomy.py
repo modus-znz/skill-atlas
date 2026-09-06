@@ -33,6 +33,14 @@ class Taxonomy:
         """Full category path for one skill, all levels down."""
         if s["source"] == "active":
             return ["Active library", self.family(s["name"])]
+        if s["source"] == "agent":
+            # Domain comes from the slug's own prefix (engineering-sre ->
+            # Engineering) rather than a hand-kept list in taxonomy.json. The
+            # roster is renamed and re-populated by the `agency` tool, so a config
+            # list would rot on the next `agency add`; deriving it means a new
+            # domain files itself and `doctor` never sees an unclassified agent.
+            dom = s["name"].split("-")[0] if "-" in s["name"] else "other"
+            return ["Agent roster", dom.capitalize()]
         if s["source"] == "vault":
             seg = s["relpath"].split(os.sep)
             mid = [x for x in seg[1:-1] if x not in ("skills", "plugins")]

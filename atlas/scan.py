@@ -70,6 +70,27 @@ def _git(d, *args):
         return ""
 
 
+def iter_units(spec, root, skip):
+    """Yield (markdown_path, bundle_dir) for one root; bundle_dir is None when flat.
+
+    Two layouts, because two different things are being censused. A skill is a
+    DIRECTORY that contains SKILL.md, so its bundle is that directory. An agent is
+    a single flat `<slug>.md` with no directory of its own -- walking for SKILL.md
+    would find nothing, and treating the root as the bundle would give all 21
+    agents the same `dir` and collapse them onto one identity.
+    """
+    if spec.get("layout") == "flat":
+        for f in sorted(os.listdir(root)):
+            fp = os.path.join(root, f)
+            if f.endswith(".md") and os.path.isfile(fp):
+                yield fp, None
+        return
+    for r, dirs, files in os.walk(root, followlinks=spec.get("follow_symlinks", False)):
+        dirs[:] = [x for x in dirs if x not in skip]
+        if "SKILL.md" in files:
+            yield os.path.join(r, "SKILL.md"), r
+
+
 def collect(cfg, now):
     """Walk every root once, deduping on realpath so symlink cycles cannot double-count."""
     skip = cfg["skip_dirs"]
@@ -78,11 +99,7 @@ def collect(cfg, now):
         source, root = spec["source"], spec["path"]
         if not os.path.isdir(root):
             continue
-        for r, dirs, files in os.walk(root, followlinks=spec.get("follow_symlinks", False)):
-            dirs[:] = [x for x in dirs if x not in skip]
-            if "SKILL.md" not in files:
-                continue
-            p = os.path.join(r, "SKILL.md")
+        for p, bundle in iter_units(spec, root, skip):
             real = os.path.realpath(p)
             if real in seen:
                 continue
@@ -92,10 +109,27 @@ def collect(cfg, now):
             except OSError:
                 continue
             fm, body = parse_frontmatter(text)
-            nf, nb, subs, newest, _ = dirstats(r, skip, now)
-            rel = os.path.relpath(r, root)
+            if bundle is None:
+                # A flat root is an ordinary directory that a human or the
+                # `agency` tool writes into, so a README or a scratch note can
+                # land beside the agents. `name:` in frontmatter is what makes a
+                # file an agent -- gate on that rather than on the .md suffix, or
+                # a stray note becomes a phantom row with no description.
+                if not fm.get("name"):
+                    continue
+                try:
+                    st = os.stat(p)
+                except OSError:
+                    continue
+                nf, nb, subs, newest = 1, st.st_size, [], st.st_mtime
+                rel = os.path.relpath(p, root)
+                unit_dir = os.path.splitext(os.path.basename(p))[0]
+            else:
+                nf, nb, subs, newest, _ = dirstats(bundle, skip, now)
+                rel = os.path.relpath(bundle, root)
+                unit_dir = os.path.basename(bundle)
             seg = rel.split(os.sep)
-            name = (fm.get("name") or os.path.basename(r)).strip('"')
+            name = (fm.get("name") or unit_dir).strip('"')
             marketplace = plugin = pver = ""
             if source == "plugin" and len(seg) >= 3:
                 marketplace, plugin, pver = seg[0], seg[1], seg[2]
@@ -105,7 +139,7 @@ def collect(cfg, now):
             wtu = re.sub(r"\s+", " ", fm.get("when_to_use", "")).strip()
             listing_text = f"{desc} - {wtu}" if wtu else desc
             rows.append({
-                "name": name, "dir": os.path.basename(r), "source": source,
+                "name": name, "dir": unit_dir, "source": source,
                 "relpath": rel, "realpath": real,
                 "group": seg[0] if rel != "." else "",
                 "marketplace": marketplace, "plugin": plugin, "pver": pver,
@@ -215,8 +249,8 @@ def run():
     with open(config.SKILLS_JSON, "w", encoding="utf-8") as f:
         json.dump(out, f)
     latest = [s for s in rows if s["is_latest"]]
-    print(f"scan: {len(rows)} SKILL.md files -> {len(latest)} distinct skills")
-    for src in ("active", "vault", "plugin"):
+    print(f"scan: {len(rows)} unit files -> {len(latest)} distinct skills and agents")
+    for src in ("active", "vault", "plugin", "agent"):
         n = sum(1 for s in latest if s["source"] == src)
         print(f"  {src:8s} {n:4d}")
     return out

@@ -17,6 +17,13 @@
       "source": "plugin",
       "path": "~/.claude/plugins/cache",
       "follow_symlinks": false
+    },
+    {
+      "source": "agent",
+      "path": "~/.claude/agents",
+      "follow_symlinks": false,
+      "layout": "flat",
+      "_layout_note": "Agents are flat <slug>.md files, not directories holding SKILL.md, so the bundle is the file itself. A file counts only if its frontmatter carries `name:` -- a README dropped in this directory never becomes a phantom agent."
     }
   ],
   "skip_dirs": [

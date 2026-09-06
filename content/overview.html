@@ -5,7 +5,7 @@ asserted_on: 2026-09-05
 assert: {unclassified: 0, phantom_shadows: 0}
 ---
 <div class="stack">
-    <p class="lede">The working assumption going in was “200+ skills”. The real number is <b>{{ metrics.total }} distinct skills</b> across three roots, from <b>{{ metrics.files_scanned }}</b> <code>SKILL.md</code> files on disk — the {{ metrics.stale_copies }}-file gap is duplicate cached plugin versions, not extra capability. Everything below is computed from that scan; nothing is carried over from prose.</p>
+    <p class="lede">The working assumption going in was “200+ skills”. The real number is <b>{{ metrics.total }} distinct skills</b> across three skill roots, from <b>{{ metrics.files_scanned }}</b> unit files on disk — the {{ metrics.stale_copies }}-file gap is duplicate cached plugin versions, not extra capability. A fourth root, <code>~/.claude/agents</code>, was added on 2026-09-06 and censuses <b>{{ metrics.agents }} resident subagents</b> alongside them; they are counted and costed but deliberately not graded, for the reasons set out under Token cost. Everything below is computed from that scan; nothing is carried over from prose.</p>
 
     <!--KPIS-->
 

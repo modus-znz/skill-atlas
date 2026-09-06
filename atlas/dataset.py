@@ -99,19 +99,25 @@ def build(strict=True):
         for i in range(1, len(sk["p"]) + 1):
             key = " / ".join(sk["p"][:i])
             a = nodes.setdefault(key, {"path": sk["p"][:i], "depth": i, "n": 0, "sc": 0,
-                                       "lt": 0, "ld": 0, "bb": 0, "sh": 0,
+                                       "scn": 0, "lt": 0, "ld": 0, "bb": 0, "sh": 0,
                                        "reach": {}, "grades": {}})
             a["n"] += 1
-            a["sc"] += sk["sc"]
             a["lt"] += sk["lt"]
             a["ld"] += sk["ld"]
             a["bb"] += sk["bb"]
             a["sh"] += 1 if sk["sh"] else 0
             a["reach"][sk["r"]] = a["reach"].get(sk["r"], 0) + 1
-            a["grades"][sk["g"]] = a["grades"].get(sk["g"], 0) + 1
+            # Agents are censused but deliberately unscored, so they count toward
+            # `n` (they are real members with real byte and token cost) and toward
+            # nothing that averages a grade. Dividing by `n` instead of `scn` would
+            # halve the average of any node that ever mixes the two.
+            if sk["sc"] is not None:
+                a["sc"] += sk["sc"]
+                a["scn"] += 1
+                a["grades"][sk["g"]] = a["grades"].get(sk["g"], 0) + 1
     for a in nodes.values():
-        a["avg"] = round(a["sc"] / a["n"], 1)
-        del a["sc"]
+        a["avg"] = round(a["sc"] / a["scn"], 1) if a["scn"] else None
+        del a["sc"], a["scn"]
 
     payload = {
         "generated": scan["generated"],
@@ -146,12 +152,20 @@ FLAT_FAMILY_MIN = 10
 def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     """Every number the narrative is allowed to quote, computed in exactly one place."""
     by = lambda src: [s for s in skills if s["s"] == src]
+    # Agents ride in `skills[]` so that identity, diffing and the category tree
+    # treat them like any other row -- but they are unscored on purpose, so every
+    # grade aggregate below is computed over `_scored` and stays a statement about
+    # SKILLS. Mixing them in would move avg_score and the grade counts on a run
+    # where no skill actually changed.
+    _scored = [s for s in skills if s["sc"] is not None]
+    _agents = by("agent")
     reach = {}
     for s in skills:
         reach[s["r"]] = reach.get(s["r"], 0) + 1
     grades = {}
     for s in skills:
-        grades[s["g"]] = grades.get(s["g"], 0) + 1
+        if s["g"] is not None:
+            grades[s["g"]] = grades.get(s["g"], 0) + 1
     listed = [s for s in skills if s["r"] == "listed"]
 
     # Listing tokens for a set of reachability states. The cost panel tabulates
@@ -204,7 +218,8 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
     return {
         "generated": scan["generated"],
         "files_scanned": len(scan["skills"]),
-        "total": len(skills),
+        "total": len(_scored),
+        "total_units": len(skills),
         "stale_copies": len(scan["skills"]) - len(skills),
         "active": len(by("active")),
         "vault": len(by("vault")),
@@ -234,6 +249,23 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "listing_tok_active": lt("listed"),
         "listing_tok_plugin": lt("plugin-on"),
         "listing_entries": len([s for s in skills if s["r"] in ("listed", "plugin-on")]),
+        # The agent roster is a second thing the session prefix pays for, and it
+        # is allocated separately from skillListingBudgetFraction -- so it is
+        # counted here rather than folded into listing_tok. Folding it in would
+        # make listing_headroom_tok and listing_over_budget wrong about the only
+        # budget they can actually describe, which is the skill listing's.
+        "agents": len(_agents),
+        "agent_listing_tok": sum(s["lt"] for s in _agents),
+        "agent_load_tok": sum(s["ld"] for s in _agents),
+        "agent_bytes": sum(s["bb"] for s in _agents),
+        "agent_desc_missing": len([s for s in _agents if s["dl"] == 0]),
+        # The marginal figure, which is the one that governs a decision: adding a
+        # resident costs this much on every request, permanently. There is no
+        # vault equivalent for agents -- no state where one stays reachable but
+        # stops billing -- so this number is the whole install/evict argument.
+        "agent_listing_tok_each": (round(sum(s["lt"] for s in _agents) / len(_agents))
+                                   if _agents else 0),
+        "agent_bytes_kb": round(sum(s["bb"] for s in _agents) / 1024),
         "listing_budget_tok": budget_tok,
         "listing_headroom_tok": budget_tok - billed,
         "listing_over_budget": int(billed > budget_tok),
@@ -272,7 +304,8 @@ def metrics(scan, skills, genuine, phantom, ri, tax, rows):
         "grade_c": grades.get("C", 0), "grade_d": grades.get("D", 0),
         "grade_e": grades.get("E", 0),
         "median_grade": sorted(grades.items(), key=lambda x: -x[1])[0][0] if grades else "-",
-        "avg_score": round(sum(s["sc"] for s in skills) / len(skills), 1) if skills else 0,
+        "avg_score": (round(sum(s["sc"] for s in _scored) / len(_scored), 1)
+                      if _scored else 0),
         "shadowed": len(genuine),
         "phantom_shadows": len(phantom),
         "router_ids": ri["size"],
