@@ -14,6 +14,7 @@ datasources:
     isDefault: false
     editable: false
     jsonData:
+      database: skill_atlas       # Grafana 11+ reads the DB name from jsonData (frontend query guard); top-level `database` above stays for backend compat
       sslmode: disable
       postgresVersion: 1700
       timescaledb: false
