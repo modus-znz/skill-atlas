@@ -1,0 +1,57 @@
+{
+  "_comment": "Family classification for the active library. This is a STARTER file, not a finished taxonomy: it ships with the family names and empty member lists, because a member list is a list of one machine's installed skills. Shipping a populated one would (a) describe somebody else's library rather than the reader's, and (b) publish that library's inventory.",
+  "_how_to_extend": "Run `atlas doctor` to list every skill currently landing in 'Unclassified', then add its slug under a family here. Or add a prefix_rule to file a whole naming convention at once. Re-run `atlas all`; the Families tab picks the change up. 'Unclassified' is a real, reported bucket -- a skill is never silently filed under a family it does not belong to.",
+  "unclassified": "Unclassified",
+  "prefix_rules": [],
+  "prefix_rules_note": "Prefix rules file a naming convention without listing members, e.g. [{\"pattern\": \"^acme-\", \"family\": \"Acme\"}]. Order matters: first match wins.",
+  "families": {
+    "Process & meta": {
+      "_about": "Skill authoring, routing, prompt and agent-workflow skills.",
+      "members": []
+    },
+    "Frontend & UI craft": {
+      "_about": "Component libraries, styling, accessibility and UI review.",
+      "members": []
+    },
+    "Motion & animation": {
+      "_about": "Animation authoring, review and motion vocabulary.",
+      "members": []
+    },
+    "Video production": {
+      "_about": "Editing, encoding, subtitles and delivery formats.",
+      "members": []
+    },
+    "Writing & documents": {
+      "_about": "Prose editing, tone and document formats.",
+      "members": []
+    },
+    "Editor & model tooling": {
+      "_about": "Second-opinion and cross-model review skills.",
+      "members": []
+    },
+    "Design aesthetics": {
+      "_about": "Named visual styles and palettes.",
+      "members": []
+    },
+    "Build & release": {
+      "_about": "Build, packaging, signing and release automation.",
+      "members": []
+    },
+    "Security": {
+      "_about": "Threat modelling, review and secret scanning.",
+      "members": []
+    },
+    "Data & analysis": {
+      "_about": "Querying, notebooks and reporting over data.",
+      "members": []
+    },
+    "Infrastructure": {
+      "_about": "Provisioning and operating hosts, clusters and networks.",
+      "members": []
+    },
+    "Testing & QA": {
+      "_about": "Test authoring, runners and flake diagnosis.",
+      "members": []
+    }
+  }
+}

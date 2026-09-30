@@ -1,0 +1,64 @@
+---
+id: upstream
+---
+<div class="sec-head"><h2>Upstream</h2><p>Where the vault came from, and what about it you cannot see locally.</p></div>
+  <div class="stack">
+    <p class="lede">This library finds <b>{{ metrics.collections }}</b> vault collections on disk. The table
+    below is generated from the scan, so it shows <i>your</i> collections and their real weights &mdash; the
+    library can count what is present but cannot reach the network, so it deliberately does not pretend to know
+    what upstream ships or how far behind you are.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Collection</th><th class="n">Skills</th><th class="n">Reachable by bare name</th><th class="n">Load tokens</th><th class="n">Avg per skill</th><th class="n">Size</th><th class="n">Avg score</th></tr></thead>
+      <tbody>
+{{ table.vault_collections }}
+      </tbody>
+    </table></div>
+
+    <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch"><code>Reachable</code> counts
+    skills addressable by bare name. A collection whose names collide with an earlier root needs a qualified id
+    for the losers, so a percentage below 100% is <i>friction</i> rather than loss &mdash; provided the index
+    namespaces ids as <code>collection/name</code>. If it does not, those rows are genuine unreachable
+    capability and the column is the number to act on. The vault holds
+    <b>{{ metrics.load_tok_vault }} tokens</b> of skill body, none of it billed until something loads it, which
+    is what makes the vault the right home for breadth.</p>
+
+    <div>
+      <h3 style="margin-bottom:10px">A shallow clone hides its own staleness</h3>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch">Vault collections are commonly brought in as
+      single-commit snapshots &mdash; squashed, or <code>clone --depth=1</code> &mdash; with no upstream remote
+      configured. A snapshot has no upstream to drift <i>from</i>, so <code>git pull</code> is a no-op and nothing
+      locally ever disagrees with anything. The staleness is invisible by construction rather than merely
+      unfixed, which is why it has to be checked deliberately. Two consequences worth knowing before you try to
+      refresh one in place:</p>
+      <ul class="list">
+        <li><b>Sparse and shallow do not combine well.</b> Expanding a shallow sparse checkout in place can hang
+        on <code>read-tree</code> or refuse <code>merge --ff-only</code>. A fresh <code>clone --depth=1</code> into
+        a temp directory and a directory swap is faster and more predictable than repairing one.</li>
+        <li><b>Counting files does not tell you whether you are behind.</b> A collection checked out sparsely, or
+        filtered by a <code>read-tree</code> exclusion, will legitimately hold fewer skills than upstream ships.
+        That gap is a <i>scope</i> difference, not drift, and a census that cannot see the exclusion list will
+        report it as staleness. Check the exclusion before concluding anything.</li>
+        <li><b>Enumerate what upstream ships but you did not take.</b> A clone frequently brings skills, agents,
+        specs and templates in the same tree, and a skills-only clone quietly drops the rest.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Order of operations, when refreshing</h3>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch">Fix reachability <i>before</i> adding volume.
+      Pulling more skills into an index that keeps one winner per id makes the library larger and no more useful,
+      because the new skills collide with the old ones. Namespace the ids first, then refresh, then confirm
+      nothing new landed already shadowed &mdash; the <code>Reachable</code> column above is that check.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Licensing</h3>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch">Not every collection that is publicly readable is
+      redistributable. A repository can be source-available &mdash; readable, clonable, and explicitly not
+      permitted to be republished &mdash; and a skill library is exactly the kind of thing that gets mirrored,
+      synced between machines, or published as part of a dotfiles repo. Check the licence of any collection
+      before it lands somewhere that is mirrored, and keep source-available material out of anything that
+      propagates automatically.</p>
+    </div>
+  </div>

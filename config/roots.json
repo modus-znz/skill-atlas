@@ -1,0 +1,45 @@
+{
+  "home": "~",
+  "settings": "~/.claude/settings.json",
+  "router_lib": "~/.claude/mcp-servers/skill-router/lib.mjs",
+  "roots": [
+    {
+      "source": "active",
+      "path": "~/.claude/skills",
+      "follow_symlinks": true
+    },
+    {
+      "source": "vault",
+      "path": "~/.claude/skill-vault",
+      "follow_symlinks": false
+    },
+    {
+      "source": "plugin",
+      "path": "~/.claude/plugins/cache",
+      "follow_symlinks": false
+    },
+    {
+      "source": "agent",
+      "path": "~/.claude/agents",
+      "follow_symlinks": false,
+      "layout": "flat",
+      "_layout_note": "Agents are flat <slug>.md files, not directories holding SKILL.md, so the bundle is the file itself. A file counts only if its frontmatter carries `name:` -- a README dropped in this directory never becomes a phantom agent."
+    }
+  ],
+  "skip_dirs": [
+    ".git",
+    "node_modules",
+    "__pycache__"
+  ],
+  "depth_subdirs": [
+    "references",
+    "reference",
+    "scripts",
+    "assets",
+    "examples",
+    "templates"
+  ],
+  "chars_per_token": 3.6,
+  "listing_budget_chars": 24000,
+  "_budget_note": "skillListingBudgetFraction 0.04 of a 600k window = 24,000 chars."
+}

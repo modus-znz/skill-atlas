@@ -1,0 +1,85 @@
+---
+id: families
+---
+<div class="sec-head"><h2>Family density</h2><p>Whether a small category is a gap worth filling or a domain that is simply finished.</p></div>
+  <div class="stack">
+    <p class="lede">The obvious reading of a family table is that thin means missing. It is wrong more often than it
+    is right, because it conflates <i>small</i> with <i>under-served</i>. What separates a healthy small family
+    from a real gap is not the count but the <b>spread</b>: how far apart the best and worst member score. A family
+    of four with a twelve-point spread is being measured, and each member is pulling its weight. A family of sixty
+    with a spread of zero is not being measured at all.</p>
+
+    <div class="tw"><table>
+      <thead><tr><th>Family</th><th class="n">Skills</th><th class="n">Listed</th><th class="n">Avg</th><th class="n">Range</th><th class="n">Spread</th><th class="n">Grades</th><th class="n">Load tok / skill</th></tr></thead>
+      <tbody>{{ table.active_families }}</tbody>
+    </table></div>
+
+    <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Most skills land in
+    <i>Unclassified</i> on a fresh install, because <code>config/taxonomy.json</code> ships as a starter with
+    empty member lists rather than a copy of somebody else's inventory. Run <code>atlas doctor</code> to list
+    them, add the slugs under a family, and re-run. A family that is small <i>because you have not classified
+    anything yet</i> is the one reading in this table that is definitely wrong.</p>
+
+    <div>
+      <h3 style="margin-bottom:10px">Small and finished looks exactly like small and missing</h3>
+      <p style="max-width:78ch">Some domains are genuinely bounded. A family covering one host application's
+      plugins can only grow when a new host plugin does; a family covering document formats is capped by how many
+      formats matter. These read as gaps in a count-only view, and topping them up would add listing weight and no
+      capability. The tell is a tight grade distribution &mdash; a small family whose members are all at the top of
+      the scale is a finished domain, because there is nothing left to fix in it.</p>
+      <p style="max-width:78ch">The converse is worth stating too, because it is the more common failure: a domain
+      that is <i>bounded but under-filled</i> looks identical in a count column, and the only way to tell them apart
+      is to ask what the family would have to contain if it were complete. That question needs knowledge of your
+      work, which is why this tool stops at size and spread and leaves the verdict to you.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">A rubric that returns a constant has stopped ranking</h3>
+      <p style="max-width:78ch">This is the finding worth more than any individual score in the table, and it is
+      about the measurement rather than the library. When a large family scores <i>identically</i> across every
+      member &mdash; same total, same parts, spread of zero &mdash; the cause is usually that most dimensions
+      saturate for that shape of skill: a long description cannot get better, a healthy body cannot get better, and
+      a directory-structure dimension sits at its floor because every member has the same layout. Five of six
+      dimensions return their maximum, the sixth returns its minimum, and every member lands on the same number.</p>
+      <p style="max-width:78ch">That is not a signal wearing the costume of noise; it is the reverse. A constant
+      over your largest family is a blind spot precisely where you have the most to lose from not knowing which
+      member is better. <code>atlas doctor</code> reports any family of ten or more with zero score variance as a
+      <b>notice</b>, and deliberately as a notice only: re-tuning the weights would change every score in the
+      report and break comparability with the stored baselines that <code>atlas diff</code> measures against. The
+      threshold is ten because a family of one has a spread of zero by arithmetic, not by blindness.</p>
+      <p style="max-width:78ch"><b>What would actually fix it</b>, when comparability is worth spending: the
+      dimension that would separate such a family is usually not a re-weighting of an existing one but a new axis
+      the rubric has no way to express &mdash; for a family of visual systems, whether a member ships something
+      executable rather than prose alone. That belongs in a deliberate rubric v2 with a fresh baseline, not in a
+      quiet edit to <code>config/rubric.json</code>.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">A low body score is ambiguous, and the rubric reads it one way</h3>
+      <p style="max-width:78ch">The <code>body</code> band is a curve, not a floor: thin earns less than good, and
+      very long earns less again. That is the right shape &mdash; a single-file document of forty thousand
+      characters is a real cost &mdash; but it makes a low score ambiguous between <i>too short</i> and <i>too
+      long</i>, and only one of those is a defect. A skill whose <code>SKILL.md</code> is already a lean index
+      delegating to a <code>references/</code> bundle is doing the right thing and will be scored down for it.</p>
+      <p style="max-width:78ch">When you do split an oversized skill, assert the split is lossless rather than
+      trusting it: enumerate every <code>##</code> section in the source and require each to land exactly once
+      across core plus references. That makes the mechanical part of the refactor provable, and it forces the
+      genuinely editorial parts &mdash; deduplicating a preamble that restates a section it should point at &mdash;
+      out of the automated path where they would otherwise pass unnoticed. A skill that is vendored from upstream
+      is a separate case: it will be overwritten on the next refresh, so leave it and note why.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">A gap is often a routing problem wearing a coverage costume</h3>
+      <p style="max-width:78ch">Before concluding a domain is missing, check whether the vault already holds it.
+      A collection will frequently carry a thorough skill for a subdomain that nothing points at, so the skill
+      never wins its own search and the domain looks bare. The fix is then a <i>pointer</i> &mdash; a routing
+      entry that names the skill and where to read more &mdash; rather than an acquisition, and it is the cheaper
+      change by a wide margin.</p>
+      <p style="max-width:78ch">Be careful with the tempting middle path of promoting the vault copy into the
+      active library to make it visible. A vault skill costs zero listing tokens and is already fully reachable by
+      search, so a copy buys no additional reach and adds a name that can collide with the original &mdash; you
+      trade a routing problem for a hygiene one. Measure the listing saving against the collision risk before
+      promoting anything.</p>
+    </div>
+  </div>

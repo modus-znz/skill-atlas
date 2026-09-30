@@ -1,0 +1,57 @@
+---
+id: cost
+title: Context cost
+---
+<div class="sec-head"><h2>Token cost</h2><p>Two very different budgets, routinely conflated.</p></div>
+  <div class="stack">
+    <p class="lede">A <b>listing</b> cost is paid in the system prefix of every single request, whether or not the skill is used — it is only the name plus the description. A <b>load</b> cost is paid once, when the skill is actually invoked, and is the whole <code>SKILL.md</code> body. Estimates below use <b>chars ÷ 3.6</b>, the ratio measured across this corpus.</p>
+
+    <div>
+      <h3 style="margin-bottom:10px">Standing cost — billed every request</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Bucket</th><th class="n">Skills</th><th class="n">Tokens</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Active — listed</td><td class="n">{{ metrics.listed }}</td><td class="n">{{ metrics.listing_tok_active }}</td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td>Plugin — enabled</td><td class="n">{{ metrics.plugin_on }}</td><td class="n">{{ metrics.listing_tok_plugin }}</td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td><b>Total standing cost</b></td><td class="n"><b>{{ metrics.listing_entries }}</b></td><td class="n"><b>{{ metrics.listing_tok }}</b></td><td><span class="pill p-warn">Paid</span></td></tr>
+          <tr><td>Active — hidden</td><td class="n">{{ metrics.hidden }}</td><td class="n">{{ metrics.listing_tok_hidden }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — disabled</td><td class="n">{{ metrics.plugin_off }}</td><td class="n">{{ metrics.listing_tok_plugin_off }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td>Plugin — unset</td><td class="n">{{ metrics.plugin_unset }}</td><td class="n">{{ metrics.listing_tok_plugin_unset }}</td><td><span class="pill p-ok">Avoided</span></td></tr>
+          <tr><td><b>Total avoided</b></td><td class="n"><b>{{ metrics.listing_avoided_n }}</b></td><td class="n"><b>{{ metrics.listing_avoided_tok }}</b></td><td><span class="pill p-ok">Saved</span></td></tr>
+          <tr><td>Vault</td><td class="n">{{ metrics.vault }}</td><td class="n">0</td><td><span class="pill p-ok">Never listed</span></td></tr>
+        </tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Read that bottom line carefully: the visibility discipline on this machine avoids <b>{{ metrics.listing_avoided_ratio }}× what it spends</b>. Turning every hidden skill and disabled plugin on would take the skill prefix from {{ metrics.listing_tok }} to <b>{{ metrics.listing_all_on_tok }}</b> tokens on every request — before a single skill is used. The vault sits outside that trade entirely: it is not a listing candidate at any setting, which is why it costs 0 rather than appearing in the avoided column. Were its {{ metrics.vault }} skills listable, they would want <b>{{ metrics.listing_tok_vault }}</b> tokens, against a listing budget of {{ metrics.listing_budget_tok }}. That gap is the whole argument for the vault.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">The second billed listing — resident agents</h3>
+      <p class="mut" style="margin:0 0 10px;font-size:12.5px;max-width:78ch">Everything above this point measures the <b>skill</b> listing and its {{ metrics.listing_budget_tok }}-token budget. The agent roster is a <i>separate</i> standing cost, drawn from its own allocation — so it is reported here beside that budget and deliberately never added into it.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Domain</th><th class="n">Agents</th><th class="n">Listing tok</th><th class="n">Avg each</th><th class="n">Load tok</th><th class="n">On disk</th><th class="n">Age (d)</th></tr></thead>
+        <tbody>{{ table.agent_domains }}</tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">The headline: <b>{{ metrics.agents }} residents cost {{ metrics.agent_listing_tok }} tokens</b> in every request, against <b>{{ metrics.listing_tok }}</b> for all {{ metrics.listing_entries }} listed skills and plugins combined. A census pointed only at the skills directory cannot see this cost at all, so the true standing cost of the prefix is under-reported by the whole amount until the roster is a scan root. The number worth watching is the marginal one: <b>{{ metrics.agent_listing_tok_each }} tokens per resident</b>, paid on every request for the life of the install. The roster has no equivalent of the vault — there is no place to park an agent where it stays reachable but stops billing, so unlike a skill, an agent you install is an agent you pay for. At {{ metrics.agent_listing_tok_each }} tokens per resident, the guardrail is not a budget question but a discipline one: add the next one deliberately rather than by habit, and evict on the same terms.</p>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">Agents carry <b>no grade</b> anywhere in this report, and that is a design decision rather than a gap. Three of the six rubric dimensions are structurally pinned for them — <code>depth</code> is always <i>stub</i> because an agent is a single file <i>by design</i>, <code>reach</code> has no listing state to grade, and <code>hygiene</code> measures a duplication mode they cannot have. A score built from the surviving three would still print beside skill grades and invite a comparison that means nothing. Better a visible <span class="pill p-mute">n/a</span> than a confident number measuring the wrong thing. Their {{ metrics.agent_bytes_kb }} KB of prose is instead held to the one standard that does transfer: every resident has a real description, and <b>{{ metrics.agent_desc_missing }}</b> are missing one.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Heaviest loads</h3>
+      <p class="mut" style="margin:0 0 10px;font-size:12.5px;max-width:78ch">Generated from the scan, ranked on load size. The interesting case is a skill near the top that is also frequently reached: that one is worth splitting into a lean core plus <code>references/</code>. A large skill that is hidden or vaulted is paying nothing per session, so its size is interesting but not urgent.</p>
+      <div class="tw"><table>
+        <thead><tr><th class="n">Load tok</th><th>Skill</th><th>Scope</th><th>Note</th></tr></thead>
+        <tbody>
+{{ table.heaviest_loads }}
+        </tbody>
+      </table></div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Vault load weight by collection</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Collection</th><th class="n">Skills</th><th class="n">Reachable</th><th class="n">Total load tok</th><th class="n">Avg per skill</th><th class="n">Bundle</th><th class="n">Avg score</th></tr></thead>
+        <tbody>{{ table.vault_collections }}</tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">The <i>Reachable</i> column is where a collection silently loses capability to a name clash. If it reads below 100%, those skills need a qualified <code>collection/name</code> id to be loadable &mdash; provided the index produces one. The vault holds <b>{{ metrics.load_tok_vault }} tokens</b> of skill body. None of it is billed until something loads it &mdash; which is exactly why the vault is the right home for breadth, and why moving rarely-used active skills into it is nearly always the right call.</p>
+    </div>
+  </div>

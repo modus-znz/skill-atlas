@@ -1,0 +1,80 @@
+---
+id: overview
+title: Overview
+---
+<div class="stack">
+    <p class="lede">This report is a census of a Claude Code skill library, taken by walking the filesystem
+    rather than by trusting the documentation. It finds <b>{{ metrics.total }} distinct skills</b> and
+    <b>{{ metrics.agents }} resident subagents</b> &mdash; <b>{{ metrics.total_units }} units</b> in all,
+    drawn from <b>{{ metrics.files_scanned }}</b> files on disk. Where that file count exceeds the unit count,
+    the difference is <b>{{ metrics.stale_copies }}</b> superseded copies of the same unit, not extra capability:
+    they are counted, flagged, and excluded from every score below.</p>
+
+    <p>Every count, score and token figure below is interpolated from this run's data. There is no prose
+    anywhere in this report holding a number that was typed by hand, so nothing here can quietly go stale
+    behind your back. The sections that <i>are</i> written in words say what to look for and where to look
+    &mdash; they do not assert what is true of your library, which is the part no scan can know.</p>
+
+    <!--KPIS-->
+
+    <div>
+      <div class="sec-head"><h2>What this audit checks for</h2><p>Four failure modes worth knowing about, and where each one is measured.</p></div>
+      <div class="stack">
+        <div class="find sev-md">
+          <div class="fh"><h3>Superseded copies read as capability</h3><span class="pill p-warn">Census</span></div>
+          <p>Plugin caches and versioned roots keep every previous release on disk. Counting files counts the
+          same skill several times, and a scan that does not collapse them will report a library larger than the
+          one the model can actually reach. This run found <b>{{ metrics.stale_copies }}</b> superseded copies
+          beyond the <b>{{ metrics.total_units }}</b> live units. The per-skill list flags each one.</p>
+          <div class="fix"><b>Where:</b> the <i>Every skill</i> panel, and the <code>stale</code> column in the exported data.</div>
+        </div>
+        <div class="find sev-ok">
+          <div class="fh"><h3>Visibility is the cheapest lever you have</h3><span class="pill p-ok">Cost</span></div>
+          <p>A hidden skill costs nothing in the session prefix. This library lists <b>{{ metrics.listed }}</b>
+          active skills for <b>{{ metrics.listing_tok_active }} tokens</b> per session, and holds
+          <b>{{ metrics.hidden }}</b> more hidden. Hiding those <b>{{ metrics.listing_avoided_n }}</b>
+          avoided <b>{{ metrics.listing_avoided_tok }} tokens</b> of listing cost, which would otherwise be
+          billed on every single request. That is the single largest deliberate saving available, and it costs
+          nothing but a line of configuration.</p>
+          <div class="fix"><b>Where:</b> the <i>Token cost</i> panel, including what the listing would look like with every hidden skill reversed.</div>
+        </div>
+        <div class="find sev-md">
+          <div class="fh"><h3>A skill nothing can select is not capability</h3><span class="pill p-bad">Reachability</span></div>
+          <p>Reachability is the axis that decides whether an installed skill does any work. A skill that is
+          installed, well written, and unreachable from every selection path is costing you disk and maintenance
+          for nothing. This run sees <b>{{ metrics.listed }}</b> skills in the automatic listing and
+          <b>{{ metrics.vault }}</b> in the vault, which is addressable by search rather than by the listing.
+          If the <code>skill-router</code> index is available, its own id map is read directly and reachability
+          becomes measured; without it, router-dependent counts are reported as <i>not measured</i> rather than
+          as zero.</p>
+          <div class="fix"><b>Where:</b> the <i>Health</i> panel. A shadowed skill &mdash; present on disk, but outranked by another with the same id &mdash; is the specific case worth hunting.</div>
+        </div>
+        <div class="find sev-hi">
+          <div class="fh"><h3>Proportion is a judgement this tool will not make for you</h3><span class="pill p-warn">Coverage</span></div>
+          <p>The scan can tell you a family holds 40 skills and another holds 1. It cannot tell you whether that
+          is wrong, because &ldquo;wrong&rdquo; is defined by what you are building, and that lives in your
+          projects rather than in <code>~/.claude</code>. So this report deliberately stops at size, spread and
+          cost. If you want density verdicts, the supported way to add them is a narrative fragment under
+          <code>content/</code> with the figures it depends on declared as assertions &mdash; then the tooling
+          will tell you when your own claim goes stale.</p>
+          <div class="fix"><b>Where:</b> the <i>Families</i> panel gives size and per-family spread; <code>atlas doctor</code> lists anything that landed in <i>Unclassified</i> so you can classify it yourself.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="sec-head"><h2>Scope at a glance</h2><p>Reachability is the axis that matters &mdash; a skill the model cannot select is not capability. Read the <i>Avg score</i> column with the rubric in mind: reachability is 25 of its 100 points, so part of the spread between these rows is the definition of the row itself, not a quality gap.</p></div>
+      <div class="tw"><table>
+        <thead><tr><th>Scope</th><th class="n">Skills</th><th class="n">Avg score</th><th class="n">Listing cost</th><th>How the model reaches it</th></tr></thead>
+        <tbody>
+          <tr><td><b>Active &mdash; listed</b></td><td class="n">{{ metrics.listed }}</td><td class="n">{{ metrics.score_listed }}</td><td class="n">{{ metrics.listing_tok_active }}</td><td>Automatic selection from the session listing</td></tr>
+          <tr><td><b>Active &mdash; hidden</b></td><td class="n">{{ metrics.hidden }}</td><td class="n">{{ metrics.score_hidden }}</td><td class="n">0</td><td><code>/name</code> by the user, or <code>skill_search</code></td></tr>
+          <tr><td><b>Vault</b></td><td class="n">{{ metrics.vault }}</td><td class="n">{{ metrics.score_vault }}</td><td class="n">0</td><td><code>skill_search</code> only</td></tr>
+          <tr><td><b>Plugin &mdash; enabled</b></td><td class="n">{{ metrics.plugin_on }}</td><td class="n">{{ metrics.score_plugin_on }}</td><td class="n">{{ metrics.listing_tok_plugin }}</td><td>Always listed; visibility overrides do not apply to plugin skills</td></tr>
+          <tr><td><b>Plugin &mdash; disabled</b></td><td class="n">{{ metrics.plugin_off }}</td><td class="n">{{ metrics.score_plugin_off }}</td><td class="n">0</td><td>Unreachable until re-enabled in settings</td></tr>
+          <tr><td><b>Plugin &mdash; unset</b></td><td class="n">{{ metrics.plugin_unset }}</td><td class="n">{{ metrics.score_plugin_unset }}</td><td class="n">0</td><td>Depends on the plugin's own scope rules</td></tr>
+          <tr><td><b>Agents</b></td><td class="n">{{ metrics.agents }}</td><td class="n">&mdash;</td><td class="n">{{ metrics.agent_listing_tok }}</td><td>Billed into the system prefix, from an allocation separate to the skill listing</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>

@@ -1,0 +1,108 @@
+name: ci
+
+# The suite runs the real pipeline against a synthetic HOME, so it measures
+# whether the tool works on a machine that is not the author's. The static
+# checks below back it up: config validity, rubric invariants, and the
+# no-hardcoded-path rule that a test alone would only catch incidentally.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Every module compiles
+        run: python -m compileall -q atlas atlas.py bin
+
+      - name: Config files are valid JSON
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys
+          bad = []
+          for p in sorted(pathlib.Path("config").glob("*.json")):
+              try:
+                  json.loads(p.read_text(encoding="utf-8"))
+              except Exception as e:
+                  bad.append(f"{p}: {e}")
+          if bad:
+              print("\\n".join(bad)); sys.exit(1)
+          print("config ok")
+          PY
+
+      - name: The CLI runs and prints its help
+        run: python atlas.py
+
+      - name: Test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: The full pipeline runs on a synthetic HOME
+        # The case that matters most for a census tool: no settings, no router,
+        # no prior runs. A stranger cloning this must get a report, not a
+        # traceback from the first stage.
+        run: |
+          export HOME="$(mktemp -d)"
+          mkdir -p "$HOME/.claude/skills"
+          python atlas.py all
+          test -s dist/skill-atlas.html
+          python atlas.py doctor || true
+
+      - name: The rubric still sums to 100
+        run: |
+          python - <<'PY'
+          import json, sys
+          r = json.load(open("config/rubric.json", encoding="utf-8"))
+          total = (max(r["reach"].values())
+                   + r["desc"]["good"] + r["depth"]["max"]
+                   + r["body"]["good"] + max(t[1] for t in r["fresh"]["tiers"])
+                   + r["hygiene"]["base"])
+          if total != 100:
+              print(f"rubric maxima sum to {total}, not 100"); sys.exit(1)
+          print(f"rubric maxima sum to {total}")
+          PY
+
+      - name: Grade bands are ordered and within range
+        run: |
+          python - <<'PY'
+          import json, sys
+          g = json.load(open("config/rubric.json", encoding="utf-8"))["grades"]
+          ordered = [g[k] for k in sorted(g)]
+          if ordered != sorted(ordered, reverse=True):
+              print(f"grade bands ascend: {g}"); sys.exit(1)
+          if min(ordered) < 0 or max(ordered) > 100:
+              print(f"grade band out of range: {g}"); sys.exit(1)
+          print(f"grade bands ok: {g}")
+          PY
+
+      - name: No path is hardcoded outside atlas/config.py
+        run: |
+          # config.py's docstring says "Nothing in this project hardcodes a
+          # path". That is an invariant worth enforcing, since a hardcoded ~
+          # would make the census silently measure the wrong machine.
+          # --binary-files=without-match matters: compileall ran a step ago and
+          # left .pyc files whose embedded source strings would otherwise match
+          # and make this check platform-dependent.
+          if grep -rn --binary-files=without-match --exclude-dir=__pycache__ \
+               '\.claude/skills\|/home/\|C:\\Users' atlas/ atlas.py \
+             | grep -v 'config.py' ; then
+            echo "hardcoded path outside atlas/config.py"; exit 1
+          fi
+          echo "no hardcoded paths"

@@ -1,0 +1,166 @@
+---
+id: health
+title: Library health
+---
+<div class="sec-head"><h2>Health &amp; findings</h2><p>The failure modes this census looks for, and where each one shows up.</p></div>
+  <p class="ledger"><b>Ledger:</b>
+    <span class="pill p-info">3 open by decision</span> measured, declined, deliberate &middot;
+    everything else here is a failure mode to recognise, not outstanding work on any
+    particular machine. Severity says how bad a finding <i>is</i>; status says whether it
+    is still work &mdash; the two are independent, and rendering only the first is why a
+    fixed Critical keeps reading as an open red item. <code>atlas doctor</code> counts these
+    tags and fails the build if this sentence stops agreeing with them.</p>
+
+  <div class="stack">
+
+    <div class="find sev-hi">
+      <div class="fh"><h3>Credentials in build configuration</h3><span class="pill p-bad">Not machine-checkable</span><span class="pill p-bad">Security</span></div>
+      <p>The most serious problem a skill library audit can find is usually not a library problem at all, and no
+      filesystem scan will surface it. The recurring shape is a release signing config &mdash; Android, iOS,
+      package signing &mdash; that declares the store and key <i>passwords</i> inline in a tracked build file,
+      with the keystore itself committed. The reason it survives review is that a <code>.gitignore</code> rule
+      for the key file exists and looks like it handles the case. It does not: <b>gitignore never applies to a
+      file that is already tracked.</b> The rule is inert, and anyone with read access can produce a build the
+      platform accepts as genuine.</p>
+      <div class="fix"><b>Fix, and deleting the files is not enough.</b> Anything committed must be treated as
+      compromised and <i>rotated</i>: generate a new key and re-key, then either purge history or move to the
+      platform's own upload-key indirection where one exists. Afterwards, read the credentials from an
+      untracked local properties file at build time. Note the asymmetry: rotation fixes the forward path,
+      history rewriting fixes the past, and neither substitutes for the other.</div>
+    </div>
+
+    <div class="find sev-hi">
+      <div class="fh"><h3>An always-loaded skill is the most expensive file in the tree</h3><span class="pill p-warn">Measured</span><span class="pill p-mute">Context cost</span></div>
+      <p>Instructions that tell the model to load a skill “at the start of any non-trivial task” make that
+      skill's entire body a fixed tax on every request. If it is a large file, it may be paid several times per
+      session, and the cost lands hardest in exactly the sessions that are already long. A skill can be
+      excellent in every respect and still be a bad citizen purely on body weight.</p>
+      <div class="fix"><b>Fix:</b> progressive disclosure. Keep a small core &mdash; decision order, the name
+      index the reader needs to navigate, a threshold table &mdash; as the always-load entry point, and move the
+      derivations, runbook index and inventories into <code>references/</code> files the core points at by name.
+      Verify conservation mechanically: set-difference the identifiers in the old file against core-plus-references
+      so a split cannot quietly drop a capability. If a core cannot be made small because the two sections that
+      make it worth loading are themselves large, that is a legitimate outcome &mdash; record it rather than
+      cutting something useful to hit a byte target.</div>
+    </div>
+
+    <div class="find sev-md">
+      <div class="fh"><h3>Descriptions too short for the search that has to find them</h3><span class="pill p-warn">Measured</span><span class="pill p-warn">Discoverability</span></div>
+      <p>Search ranks on the description string, so a short description is a discoverability defect, not a style
+      one. It bites hardest on skills that are <i>not</i> in the session listing, because for those the
+      description is the only thing search has to match against. A few dozen characters gives the ranker almost
+      nothing, and the skill loses to longer, vaguer entries on queries it should win outright. A length floor
+      will catch the genuinely empty ones; it will not catch the merely unhelpful, which need reading.</p>
+      <div class="fix"><b>Fix:</b> extend each to roughly 150&ndash;300 characters carrying real trigger
+      vocabulary &mdash; model names, file types, path fragments, error strings, API symbols &mdash; the things a
+      real query would contain. Check whether the skill is re-listed anywhere project-scoped before claiming the
+      change is free: a per-project settings file can re-list it and make the longer text a real cost in that
+      one repository.</div>
+    </div>
+
+    <div class="find sev-md">
+      <div class="fh"><h3>Colliding names, and shadow events that are phantoms</h3><span class="pill p-warn">Measured</span><span class="pill p-mute">Reachability</span></div>
+      <p>When an index keeps one winner per id under a precedence order, every losing copy is unreachable &mdash;
+      and, if search iterates the winners-only map, unreachable by <i>any</i> spelling, not merely by
+      <code>load</code>. Ties then break on filesystem enumeration order, so which copy survives is not a policy
+      decision at all. The subtle half is the false positive: a collection that symlinks one directory to another
+      makes a walker that only dedupes entries <i>reached through</i> a symlink walk the same files twice, so each
+      skill shadows itself. The tell is a file count that disagrees with the skill count.</p>
+      <div class="fix"><b>Fix, two independent changes:</b> namespace ids as
+      <code>collection/name</code>, letting a bare name still resolve to the highest-precedence copy and report
+      its siblings as variants so choosing one is deliberate rather than silent; and dedupe on the
+      <code>realpath</code> of <i>every</i> directory entered, not just of symlinked entries. The second is a
+      couple of lines and removes the phantom reports on its own.</div>
+    </div>
+
+    <div class="find sev-md">
+      <div class="fh"><h3>Duplicate copies that do not sort</h3><span class="pill p-warn">Measured</span><span class="pill p-warn">Hygiene</span></div>
+      <p>Semver-named version folders sort, so the newest is determinable. Content-hash-named folders do not, so
+      the current copy has to be resolved by modification time &mdash; which means a stale copy can win if a
+      file is ever touched. Several copies of one unit is genuinely fragile resolution. It is also frequently
+      <i>not</i> where the disk went: a handful of hash directories may be megabytes in total while the weight
+      sits in a different plugin that vendors a browser or a dependency tree. Measure bytes directly rather than
+      counting directories, and be prepared for the directory count to point somewhere else entirely.</p>
+      <div class="fix"><b>Fix:</b> keep the one version each manifest entry actually resolves to and remove the
+      rest. Resolve the keeper from the installed-plugin manifest rather than from the tree, assert it exists and
+      is non-empty before deleting anything, and re-verify every plugin resolves afterwards.</div>
+    </div>
+
+    <div class="find sev-md st-decl">
+      <div class="fh"><h3>A rubric that penalises a cost the skill cannot incur</h3><span class="pill p-info">Open by decision</span><span class="pill p-warn">Measurement</span></div>
+      <p>This one is about the measurement, not the library, and it is worth reading carefully because it is the
+      failure mode that makes an audit actively misleading. <b>{{ metrics.desc_bloated }}</b> skills lose points for
+      running past <code>rubric.desc.long_max</code>. <b>{{ metrics.desc_bloated_billed }} of them are billed</b>
+      &mdash; each sits in the vault, a disabled plugin, or an unset plugin, where description length is charged to
+      no session prefix. The penalty is calibrated for the listing and then applied uniformly, so it measures a cost
+      these skills structurally cannot pay.</p>
+      <p>Worse, it points the wrong way: search weights a description match per query token, so on an unbilled
+      skill a longer description is a pure retrieval gain. Acting on the score would make
+      {{ metrics.desc_bloated }} skills harder to find and save nothing. This is also the whole of the remaining
+      grade-D population: {{ metrics.grade_d }} D-grade skills, {{ metrics.grade_d_billed }} of them billed.</p>
+      <div class="fix"><b>Fix:</b> make the <code>desc</code> band reach-aware &mdash; charge length only where
+      the listing bills it. Deliberately not done here, for a reason worth copying: <code>rubric.json</code>
+      records that its weights are held steady so scores stay comparable with an earlier baseline, and
+      re-banding silently re-scores every skill in the library, including any finding that cites a grade.
+      Re-baselining is a decision to take deliberately, not a side effect of a cleanup.</div>
+    </div>
+
+    <div class="find sev-lo st-decl">
+      <div class="fh"><h3>One collection vendoring byte-identical copies of its own skills</h3><span class="pill p-info">Open by decision</span><span class="pill p-info">Tidy-up</span></div>
+      <p>Distinct from superseded cache versions: these are same-version fan-out inside a single upstream
+      repository, where one skill is committed once per sub-directory it is relevant to and the copies share an
+      identical checksum. It looks like local duplication and is not &mdash; it costs no listing tokens, and once
+      ids are qualified every copy is separately addressable. Worth recording so the repeated names are not
+      mistaken for a mistake to fix locally.</p>
+      <div class="fix"><b>Fix:</b> none locally. It is upstream vendoring. Recorded, not chased.</div>
+    </div>
+
+    <div class="find sev-lo st-decl">
+      <div class="fh"><h3>Two generations of the same skill installed side by side</h3><span class="pill p-info">Open by decision</span><span class="pill p-info">Tidy-up</span></div>
+      <p>A <code>-v1</code> left beside its successor, or a family of near-synonymous names that drifted apart,
+      makes the router's job harder and leaves you maintaining both. Retiring a listed skill returns its
+      description from every session, which is a real but modest saving, and it is a judgement call about which
+      implementation you trust rather than a token argument.</p>
+      <div class="fix"><b>Fix:</b> pick a winner per pair and delete or move the loser to the vault.</div>
+    </div>
+
+    <div class="find sev-ok">
+      <div class="fh"><h3>Frontmatter that fell out of the block</h3><span class="pill p-warn">Measured</span><span class="pill p-info">Parse hygiene</span></div>
+      <p>The quietest failure in the set, and the most worth a check. A well-written description can end up
+      stranded in the <i>body</i> of a file instead of inside <code>---</code> &mdash; usually after a bulk import.
+      It is quiet by construction: a parser that falls back to the first non-heading body line will then return
+      the literal text <code>description: Track and&hellip;</code> as if it were the description, so search
+      returns a plausible-looking snippet while the real text was never indexed, and the label itself now pollutes
+      the haystack it is being searched in.</p>
+      <div class="fix"><b>Fix:</b> hoist descriptions into real YAML frontmatter, preferring the folded
+      block-scalar form because it survives the colons, quotes and indentation these texts tend to contain. Then
+      verify through two independent parsers and count how many units still rely on the fallback.</div>
+    </div>
+
+    <div class="find sev-ok">
+      <div class="fh"><h3>Structural health</h3><span class="pill p-ok">Healthy</span></div>
+      <p>Live numbers from this run: <b>{{ metrics.desc_missing }}</b> active skills missing a
+      <code>description</code>, <b>{{ metrics.unclassified }}</b> landing in <i>Unclassified</i>,
+      <b>{{ metrics.stale_taxonomy }}</b> taxonomy entries naming skills that no longer exist. The oldest thing
+      in the active library is {{ metrics.active_max_age_days }} days old. {{ metrics.grade_a }} skills grade A and
+      {{ metrics.grade_b }} grade B; {{ metrics.grade_d }} fall to D, of which {{ metrics.grade_d_billed }} are
+      billed in the listing. Frontmatter discipline across {{ metrics.files_scanned }} files is the cheapest
+      thing to fix and the one most often broken by imports.</p>
+    </div>
+
+    <div style="margin-top:8px">
+      <div class="sec-head"><h3>Fix order, by payoff per unit of effort</h3><p>Concrete changes, cheapest first. The order is the durable part; the specific numbers in a given run are not.</p></div>
+      <div class="tw"><table>
+        <thead><tr><th class="n">#</th><th>Change</th><th>Effort</th><th>What it buys</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Namespace index ids as <code>collection/name</code>, and dedupe directory <code>realpath</code>s in the walker</td><td>Trivial</td><td class="num">Every shadowed skill becomes addressable; phantom shadow reports disappear</td></tr>
+          <tr><td class="n">2</td><td>Prune superseded cache versions, resolving the keeper from the manifest</td><td>Low</td><td class="num">Disk reclaimed, and fragile mtime-based resolution removed</td></tr>
+          <tr><td class="n">3</td><td>Hoist body-stranded descriptions into real frontmatter</td><td>Low</td><td class="num">Un-indexed skills become findable</td></tr>
+          <tr><td class="n">4</td><td>Extend descriptions below the length floor with real trigger vocabulary</td><td>Low</td><td class="num">Search starts winning on the queries those skills exist for</td></tr>
+          <tr><td class="n">5</td><td>Split the always-loaded skill into a lean core plus <code>references/</code></td><td>Medium</td><td class="num">A fixed per-request tax removed from every session</td></tr>
+          <tr><td class="n">6</td><td>Retire superseded generations and vendored duplicate copies</td><td>Medium</td><td class="num">Less to maintain; small listing saving</td></tr>
+          <tr><td class="n">7</td><td>Make the rubric's description band reach-aware, and re-baseline deliberately</td><td>High</td><td class="num">Stops the score from recommending the wrong action</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>

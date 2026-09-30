@@ -1,0 +1,66 @@
+---
+id: rubric
+---
+<div class="sec-head"><h2>Scoring rubric</h2><p>How every score in the report was computed.</p></div>
+  <div class="stack">
+    <p class="lede">No skill was scored by hand. A hand-assigned number across the whole library would be unverifiable and inconsistent, so the score is a formula over measured properties — which means you can disagree with the weights and recompute, rather than having to take the number on trust. Six dimensions, 100 points.</p>
+    <div class="tw"><table>
+      <thead><tr><th class="n">Pts</th><th>Dimension</th><th>Bands</th></tr></thead>
+      <tbody>
+{{ table.rubric_weights }}
+      </tbody>
+    </table></div>
+    <p class="mut" style="margin:8px 0 14px;font-size:12.5px;max-width:78ch">The bands above are read from
+    <code>config/rubric.json</code> at render time rather than restated here, so this table cannot describe a
+    rubric the report is not actually using. Edit that file and this follows.</p>
+
+    <ul class="list" style="margin:0 0 16px">
+      <li><b>Reachability</b> &mdash; a skill the model cannot select is not capability. This is the single
+      strongest predictor of whether a skill ever fires, and it is weighted accordingly.</li>
+      <li><b>Description quality</b> &mdash; search ranks on the description, and for hidden and vault skills it
+      is the <i>only</i> route in. Too short is unfindable; too long is a standing tax when listed.</li>
+      <li><b>Bundle depth</b> &mdash; a <code>references/</code>, <code>scripts/</code> or <code>assets/</code>
+      directory is the difference between a skill and a note-to-self, and it is what makes progressive disclosure
+      possible at all.</li>
+      <li><b>Body weight</b> &mdash; a skill has to be loadable without eating the window. This band is a
+      <i>curve</i>, not a floor: thin loses to good, and very long loses again, because a forty-thousand-character
+      single file is a real cost. A low score here is ambiguous between too short and too long, and only one of
+      those is a defect.</li>
+      <li><b>Freshness</b> &mdash; newest file mtime in the bundle. A proxy, not proof, but a skill untouched for
+      a year in a fast-moving toolchain is a different risk from one touched last week.</li>
+      <li><b>Hygiene</b> &mdash; duplicate cached copies and name collisions have real consequences: one costs
+      disk and resolution ambiguity, the other costs reachability outright.</li>
+    </ul>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 style="margin-bottom:8px">Grade bands</h4>
+        <ul class="list">
+          <li><span class="pill gA">A</span> 82–100 — reachable, well-described, properly bundled. <b>{{ metrics.grade_a }} skills</b>.</li>
+          <li><span class="pill gB">B</span> 70–81 — sound, with one weak dimension. <b>{{ metrics.grade_b }} skills</b>.</li>
+          <li><span class="pill gC">C</span> 58–69 — a real defect worth fixing. <b>{{ metrics.grade_c }} skills</b>.</li>
+          <li><span class="pill gD">D</span> 45–57 — two or more compounding defects. <b>{{ metrics.grade_d }} skills</b>, of which {{ metrics.grade_d_billed }} are billed in the listing.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom:8px">What the score deliberately does not measure</h4>
+        <ul class="list">
+          <li><b>Quality of the instructions.</b> Judged only by proxy — nothing here reads the prose and rates the advice.</li>
+          <li><b>Fit to this machine's work.</b> Handled separately in the density verdicts, which are hand-authored at the category level.</li>
+          <li><b>Actual usage.</b> No invocation telemetry is available, so a brilliant skill never once fired scores identically to one used daily.</li>
+        </ul>
+        <p style="font-size:13px;color:var(--ink-3);margin-top:10px">Treat a score as a triage signal — where to look first — not a verdict.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-bottom:8px">Method</h4>
+      <ul class="list">
+        <li>Walked four roots, parsing YAML frontmatter from every <code>SKILL.md</code> &mdash; and, in the flat <code>~/.claude/agents</code> root, from every <code>&lt;slug&gt;.md</code> carrying a <code>name:</code> key. Symlinks not followed, <code>.git</code> and <code>node_modules</code> excluded. <b>{{ metrics.files_scanned }} files.</b></li>
+        <li>Collapsed the plugin cache to the newest version per <code>(plugin, skill)</code> — semver preferred, mtime as the tiebreak for hash-named directories. <b>{{ metrics.stale_copies }} superseded copies removed → {{ metrics.total }}.</b></li>
+        <li>Reachability derived from <code>skillOverrides</code> and <code>enabledPlugins</code> in <code>~/.claude/settings.json</code>, not from documentation.</li>
+        <li>Token figures are estimates at <b>chars ÷ 3.6</b>. Good to roughly ±10% for English prose with code fences; treat them as comparative, not exact.</li>
+        <li>Upstream figures fetched live from the public repositories on the generation date.</li>
+      </ul>
+    </div>
+  </div>

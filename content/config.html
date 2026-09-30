@@ -1,0 +1,54 @@
+---
+id: config
+---
+<div class="sec-head"><h2>Configuration</h2><p>What decides reachability, and what quietly changes the bill.</p></div>
+  <div class="stack">
+
+    <div>
+      <h3 style="margin-bottom:10px">Reachability mechanics worth remembering</h3>
+      <ul class="list">
+        <li><b>Visibility overrides do not apply to plugin skills.</b> Hiding is only available for skills in your
+        own skills directory. A plugin is all-or-nothing: enabled means every one of its skills is listed, at full
+        description cost. There is no per-skill middle ground, so a plugin is priced as a unit.</li>
+        <li><b>Hidden is not disabled.</b> The {{ metrics.hidden }} overridden skills work exactly as before
+        &mdash; they are absent from automatic selection and reachable by name or by search. Hiding changes what is
+        paid for by default, not what is available.</li>
+        <li><b>A search index that excludes the plugin cache is not missing anything.</b> Plugin skills cannot be
+        hidden, so they are already in the listing; indexing them too would only duplicate it. If your index
+        deliberately skips them, a low plugin count there is expected rather than a gap.</li>
+        <li><b>Project settings can re-enable a family.</b> A family you hid globally can be re-listed in a single
+        repository's settings, so it is listed where the work happens and hidden everywhere else. That is the right
+        pattern for a skill belonging to one codebase, and it beats a global switch in both directions. Note the
+        cost: a re-listed skill pays its description in <i>that</i> repository's every session, so a longer
+        description written for discoverability is not free there.</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">A hook can turn an on-demand skill into standing cost</h3>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch">A skill that is only paid for when it loads is
+      cheap by construction. A hook that injects a skill's body into every session removes that property
+      entirely: the file is now a fixed per-request tax, paid whether or not the work needs it, and it will not
+      appear in any listing-cost figure because the listing is not where it is billed. This is the one place a
+      library can acquire a large recurring cost without any configuration in the skills directory changing.</p>
+      <p style="font-size:14px;color:var(--ink-2);max-width:78ch">The audit that catches it is cheap: list the
+      hooks wired to <code>SessionStart</code> and to <code>PostToolUse</code>, and for each one that injects
+      content, treat that content as a listing cost and account for it next to
+      {{ metrics.listing_tok_active }} tokens of skill listing. Hooks that only <i>verify</i> something and inject
+      a short rule are fine; the expensive shape is a hook that injects a reference document.</p>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:10px">Plugin state &mdash; {{ metrics.plugin_installed }} installed, {{ metrics.plugin_on_installed }} on</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Plugin</th><th class="n">Skills</th><th class="n">Versions cached</th><th class="n">Listing tok</th><th>State</th></tr></thead>
+        <tbody>{{ table.plugins }}</tbody>
+      </table></div>
+      <p style="font-size:13.5px;color:var(--ink-2);margin-top:10px;max-width:78ch">A disabled plugin still holds
+      its cache, and since a plugin is priced as a unit, the most expensive thing in the table is often not the one
+      you would enable &mdash; it is the largest plugin sitting switched off, keeping several cached versions of
+      skills nothing can reach. The <code>Versions cached</code> column is the signal: anything above 1 there is
+      disk with no reach. Prune it on the same principle as the vault, resolving the keeper from the installed
+      manifest rather than from the directory tree.</p>
+    </div>
+  </div>

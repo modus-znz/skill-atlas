@@ -1,0 +1,15 @@
+# Loads the version-controlled dashboard JSON from disk. The atlas repo is the
+# source of truth; edits made in the Grafana UI are not persisted back, so the
+# dashboard is reproducible from git alone.
+apiVersion: 1
+providers:
+  - name: Skill Atlas
+    orgId: 1
+    folder: Skill Atlas
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards/skill-atlas
+      foldersFromFilesStructure: false
